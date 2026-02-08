@@ -138,6 +138,25 @@
         </div>
       </div>
     </el-dialog>
+    <el-dialog
+      :visible.sync="translateDialogVisible"
+      :show-close="false"
+      :modal="true"
+      :close-on-click-modal="true"
+      custom-class="ag-dialog-translate"
+      width="480px"
+      @close="handleTranslateDialogClose"
+    >
+      <div slot="title" class="translate-dialog-title">
+        <span class="translate-title">{{ $t('Translate') }}</span>
+      </div>
+      <div class="translate-dialog-body">
+        <div class="translate-output">{{ aiOutput }}</div>
+      </div>
+      <div slot="footer" class="translate-footer">
+        <el-button type="primary" :disabled="!aiOutput" @click="handleTranslateCopy">{{ $t('Copy') }}</el-button>
+      </div>
+    </el-dialog>
     <search
       v-if="!sourceCode"
     ></search>
@@ -145,7 +164,7 @@
 </template>
 
 <script>
-import { shell } from 'electron'
+import { clipboard, shell } from 'electron'
 import { dialog } from '@electron/remote'
 import path from 'path'
 import log from 'electron-log'
@@ -289,6 +308,7 @@ export default {
       dialogTableVisible: false,
       imageViewerVisible: false,
       aiDialogVisible: false,
+      translateDialogVisible: false,
       aiDialogTitle: '',
       aiAction: '',
       aiOutput: '',
@@ -1269,6 +1289,18 @@ export default {
         : null
       // 优先使用事件带来的文本，其次使用编辑器导出的选区文本
       const selectionText = text || (clipboardData && clipboardData.text) || ''
+      if (action === 'translate') {
+        this.stopAiGeneration()
+        this.resetAiState()
+        this.aiAction = action
+        this.aiDialogTitle = actionMap[action]
+        this.aiSelectionText = selectionText
+        this.aiAllMarkdown = this.editor ? this.editor.getMarkdown() : ''
+        this.aiSelectionCursor = cursor || selection.getCursorRange()
+        this.translateDialogVisible = true
+        this.startAiGeneration()
+        return
+      }
       this.aiAction = action
       this.aiDialogTitle = actionMap[action]
       this.aiSelectionText = selectionText
@@ -1287,6 +1319,21 @@ export default {
       this.stopAiGeneration()
       this.resetAiState()
       this.aiDialogVisible = false
+    },
+
+    handleTranslateDialogClose () {
+      this.stopAiGeneration()
+      this.resetAiState()
+      this.translateDialogVisible = false
+    },
+
+    handleTranslateCopy () {
+      if (!this.aiOutput) {
+        this.handleTranslateDialogClose()
+        return
+      }
+      clipboard.writeText(this.aiOutput)
+      this.handleTranslateDialogClose()
     },
 
     handleAiPause () {
@@ -1824,6 +1871,33 @@ export default {
   .ag-dialog-ai .el-dialog__footer {
     padding: 10px 16px 12px;
     flex-shrink: 0;
+  }
+
+  .ag-dialog-translate .el-dialog__header {
+    border-bottom: 1px solid var(--editorColor10);
+    padding: 12px 16px 10px;
+  }
+
+  .ag-dialog-translate .el-dialog__body {
+    padding: 12px 16px;
+  }
+
+  .translate-dialog-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .translate-output {
+    max-height: 240px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .translate-footer {
+    display: flex;
+    justify-content: flex-end;
   }
 
   .ai-dialog-title {
