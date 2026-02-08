@@ -70,24 +70,45 @@
       :visible.sync="aiDialogVisible"
       :show-close="false"
       :modal="true"
+      :close-on-click-modal="false"
       custom-class="ag-dialog-ai"
-      width="560px"
+      width="600px"
       @close="handleAiDialogClose"
     >
       <div slot="title" class="ai-dialog-title">
-        <button class="ai-back" @click="handleAiDialogClose">
-          <i class="el-icon-arrow-left"></i>
-        </button>
-        <span class="ai-title">{{ aiDialogTitle }}</span>
+        <div class="ai-title-left">
+          <button class="ai-back" @click="handleAiDialogClose">
+            <i class="el-icon-arrow-left"></i>
+          </button>
+          <span class="ai-title">{{ aiDialogTitle }}</span>
+        </div>
+        <span v-if="isAiChat" class="ai-provider">{{ aiProviderLabel }}</span>
       </div>
-      <div class="ai-dialog-body">
+      <div v-if="!isAiChat" class="ai-dialog-body">
         <div ref="aiOutput" class="ai-output">{{ aiOutput }}</div>
         <div class="ai-meta">
           <span class="ai-hint">{{ $t('AI generated content') }}</span>
           <span class="ai-count">{{ aiWordCountLabel }}</span>
         </div>
       </div>
-      <div slot="footer" class="ai-footer">
+      <div v-else class="ai-dialog-body ai-chat-body">
+        <div ref="aiChatList" class="ai-chat-list">
+          <div
+            v-for="message in aiChatMessages"
+            :key="message.id"
+            class="ai-chat-message"
+            :class="message.role"
+          >
+            <div class="ai-chat-avatar">
+              {{ message.role === 'assistant' ? $t('AI') : $t('You') }}
+            </div>
+            <div class="ai-chat-bubble">
+              <div class="ai-chat-content" v-html="message.html"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-if="!isAiChat" slot="footer" class="ai-footer">
         <template v-if="aiGenerating">
           <el-button type="primary" @click="handleAiPause">{{ $t('Pause') }}</el-button>
         </template>
@@ -96,6 +117,20 @@
           <el-button @click="handleAiRewrite">{{ $t('Rewrite') }}</el-button>
           <el-button type="primary" @click="handleAiApply">{{ $t('Apply Replace') }}</el-button>
         </template>
+      </div>
+      <div v-else slot="footer" class="ai-chat-footer">
+        <div class="ai-chat-input-wrapper">
+          <textarea
+            v-model="aiChatInput"
+            class="ai-chat-input"
+            :placeholder="$t('Type a message')"
+            @keydown.enter.exact.prevent="handleAiChatSend"
+          ></textarea>
+        </div>
+        <div class="ai-chat-actions">
+          <el-button v-if="aiGenerating" type="primary" @click="handleAiPause">{{ $t('Pause') }}</el-button>
+          <el-button v-else type="primary" :disabled="!aiChatInputTrimmed" @click="handleAiChatSend">{{ $t('Send') }}</el-button>
+        </div>
       </div>
     </el-dialog>
     <search
@@ -139,6 +174,7 @@ import { getCssForOptions, getHtmlToc } from '@/util/pdf'
 import { addCommonStyle, setEditorWidth } from '@/util/theme'
 import selection from 'muya/lib/selection'
 import { callExternalLlmStream } from '@/util/llm'
+import markdownToHtml from '@/util/markdownToHtml'
 
 import 'muya/themes/default.css'
 import '@/assets/themes/codemirror/one-dark.css'
@@ -211,6 +247,22 @@ export default {
     }),
     aiWordCountLabel () {
       return `${this.$t('Word Count')}: ${this.aiWordCount}`
+    },
+    isAiChat () {
+      return this.aiAction === 'chat'
+    },
+    aiProviderLabel () {
+      const provider = (this.preferences && this.preferences.llmProvider) || ''
+      const labels = {
+        deepseek: this.$t('DeepSeek'),
+        qwen: this.$t('Qwen'),
+        doubao: this.$t('Doubao'),
+        yuanbao: this.$t('Yuanbao')
+      }
+      return labels[provider] || this.$t('AI')
+    },
+    aiChatInputTrimmed () {
+      return (this.aiChatInput || '').trim()
     }
   },
 
@@ -239,6 +291,12 @@ export default {
       aiStream: null,
       aiStreamCancel: null,
       aiTypewriterTimer: null,
+      aiChatMessages: [],
+      aiChatInput: '',
+      aiChatMessageId: 0,
+      aiChatActiveMessageId: null,
+      aiChatRenderTimer: null,
+      aiChatRenderVersion: 0,
       tableChecker: {
         rows: 4,
         columns: 3
@@ -1206,7 +1264,11 @@ export default {
       // 优先使用事件传递的选区游标，避免工具栏点击导致游标变化
       this.aiSelectionCursor = cursor || selection.getCursorRange()
       this.aiDialogVisible = true
-      this.startAiGeneration()
+      if (action === 'chat') {
+        this.initAiChatSession(selectionText)
+      } else {
+        this.startAiGeneration()
+      }
     },
 
     handleAiDialogClose () {
@@ -1283,10 +1345,12 @@ export default {
 
     startAiGeneration () {
       this.stopAiGeneration()
-      this.aiOutput = ''
       this.aiPendingText = ''
       this.aiStreamBuffer = ''
-      this.aiWordCount = 0
+      if (!this.isAiChat) {
+        this.aiOutput = ''
+        this.aiWordCount = 0
+      }
       this.aiGenerating = true
       this.runAiRequest()
     },
@@ -1301,6 +1365,7 @@ export default {
       this.aiPendingText = ''
       this.aiStreamBuffer = ''
       this.stopAiTypewriter()
+      this.flushAiChatRender()
     },
 
     resetAiState () {
@@ -1313,6 +1378,14 @@ export default {
       this.aiSelectionCursor = null
       this.aiSelectionText = ''
       this.aiAllMarkdown = ''
+      this.aiChatMessages = []
+      this.aiChatInput = ''
+      this.aiChatActiveMessageId = null
+      this.aiChatRenderVersion = 0
+      if (this.aiChatRenderTimer) {
+        clearTimeout(this.aiChatRenderTimer)
+        this.aiChatRenderTimer = null
+      }
     },
 
     async runAiRequest () {
@@ -1363,12 +1436,14 @@ export default {
       if (!this.aiPendingText) {
         this.stopAiTypewriter()
       }
+      this.flushAiChatRender()
     },
 
     handleAiStreamError () {
       this.aiGenerating = false
       this.detachAiStream()
       this.stopAiTypewriter()
+      this.flushAiChatRender()
     },
 
     consumeAiStreamBuffer () {
@@ -1420,9 +1495,13 @@ export default {
         const step = Math.min(3, this.aiPendingText.length)
         const chunk = this.aiPendingText.slice(0, step)
         this.aiPendingText = this.aiPendingText.slice(step)
-        this.aiOutput += chunk
-        this.aiWordCount = this.calculateAiWordCount(this.aiOutput)
-        this.$nextTick(this.scrollAiOutputToBottom)
+        if (this.isAiChat) {
+          this.appendAiChatText(chunk)
+        } else {
+          this.aiOutput += chunk
+          this.aiWordCount = this.calculateAiWordCount(this.aiOutput)
+          this.$nextTick(this.scrollAiOutputToBottom)
+        }
       }, 20)
     },
 
@@ -1440,13 +1519,30 @@ export default {
       }
     },
 
+    scrollAiChatToBottom () {
+      const list = this.$refs.aiChatList
+      if (list) {
+        list.scrollTop = list.scrollHeight
+      }
+    },
+
     calculateAiWordCount (text) {
       return (text || '').replace(/\s/g, '').length
     },
 
     buildAiMessages () {
-      const systemPrompt = '你是一位精通知识的学者，擅长语言与文字表达能力，请辅助用户完成他的文字编辑与文章内容撰写，要求实事求是，不得捏造虚假内容，要求语言流畅、逻辑清晰有条理，语言精炼不冗余。'
       const fullText = this.aiAllMarkdown || ''
+      if (this.isAiChat) {
+        const systemPrompt = `你是一位精通知识的学者，擅长语言与文字表达能力，现在用户正在编辑文章，内容为：${fullText}，请根据文章与用户提问进行回答。回答内容要准确、流畅、有逻辑。`
+        return [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          ...this.buildAiChatMessages()
+        ]
+      }
+      const systemPrompt = '你是一位精通知识的学者，擅长语言与文字表达能力，请辅助用户完成他的文字编辑与文章内容撰写，要求实事求是，不得捏造虚假内容，要求语言流畅、逻辑清晰有条理，语言精炼不冗余。'
       const selectionText = this.aiSelectionText || ''
       let userPrompt = ''
       if (this.aiAction === 'expand') {
@@ -1468,6 +1564,99 @@ export default {
           content: userPrompt
         }
       ]
+    },
+
+    buildAiChatMessages () {
+      return this.aiChatMessages.map(item => ({
+        role: item.role,
+        content: item.content
+      }))
+    },
+
+    initAiChatSession (selectionText) {
+      this.aiChatMessages = []
+      this.aiChatActiveMessageId = null
+      this.aiChatInput = selectionText || ''
+      const greeting = this.createAiChatMessage('assistant', this.$t('AI Chat Greeting'))
+      this.aiChatMessages.push(greeting)
+      this.renderAiChatMessage(greeting)
+      this.$nextTick(this.scrollAiChatToBottom)
+    },
+
+    createAiChatMessage (role, content) {
+      this.aiChatMessageId += 1
+      return {
+        id: this.aiChatMessageId,
+        role,
+        content: content || '',
+        html: '',
+        renderVersion: 0
+      }
+    },
+
+    async renderAiChatMessage (message) {
+      const version = (message.renderVersion || 0) + 1
+      message.renderVersion = version
+      const html = await markdownToHtml(message.content || '')
+      if (message.renderVersion === version) {
+        message.html = html
+        this.$nextTick(this.scrollAiChatToBottom)
+      }
+    },
+
+    scheduleAiChatRender (message) {
+      if (this.aiChatRenderTimer) {
+        return
+      }
+      const version = this.aiChatRenderVersion
+      this.aiChatRenderTimer = setTimeout(async () => {
+        this.aiChatRenderTimer = null
+        const html = await markdownToHtml(message.content || '')
+        message.html = html
+        this.$nextTick(this.scrollAiChatToBottom)
+        if (version !== this.aiChatRenderVersion) {
+          this.scheduleAiChatRender(message)
+        }
+      }, 120)
+    },
+
+    appendAiChatText (text) {
+      const message = this.aiChatMessages.find(item => item.id === this.aiChatActiveMessageId)
+      if (!message) {
+        return
+      }
+      message.content += text
+      this.aiChatRenderVersion += 1
+      this.scheduleAiChatRender(message)
+    },
+
+    flushAiChatRender () {
+      if (this.aiChatRenderTimer) {
+        clearTimeout(this.aiChatRenderTimer)
+        this.aiChatRenderTimer = null
+      }
+      const message = this.aiChatMessages.find(item => item.id === this.aiChatActiveMessageId)
+      if (message) {
+        this.renderAiChatMessage(message)
+      }
+    },
+
+    handleAiChatSend () {
+      if (this.aiGenerating) {
+        return
+      }
+      const content = this.aiChatInputTrimmed
+      if (!content) {
+        return
+      }
+      const userMessage = this.createAiChatMessage('user', content)
+      this.aiChatMessages.push(userMessage)
+      this.renderAiChatMessage(userMessage)
+      const assistantMessage = this.createAiChatMessage('assistant', '')
+      this.aiChatMessages.push(assistantMessage)
+      this.aiChatActiveMessageId = assistantMessage.id
+      this.aiChatInput = ''
+      this.startAiGeneration()
     }
   },
   beforeDestroy () {
@@ -1537,6 +1726,157 @@ export default {
     overflow: auto;
     box-sizing: border-box;
     cursor: default;
+  }
+
+  .ag-dialog-ai {
+    height: 520px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ag-dialog-ai .el-dialog__header {
+    border-bottom: 1px solid var(--editorColor10);
+    padding: 12px 16px 10px;
+    flex-shrink: 0;
+  }
+
+  .ag-dialog-ai .el-dialog__body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .ag-dialog-ai .el-dialog__footer {
+    padding: 10px 16px 12px;
+    flex-shrink: 0;
+  }
+
+  .ai-dialog-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .ai-dialog-title .ai-title-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ai-dialog-title .ai-provider {
+    font-size: 12px;
+    color: var(--editorColor60);
+  }
+
+  .ai-dialog-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px;
+    box-sizing: border-box;
+    min-height: 0;
+  }
+
+  .ai-chat-body {
+    padding: 12px 16px 0;
+  }
+
+  .ai-chat-list {
+    flex: 1;
+    max-height: none;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--editorColor10);
+    border-radius: 6px;
+    background: var(--floatBgColor);
+    min-height: 0;
+  }
+
+  .ai-chat-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .ai-chat-message.user {
+    flex-direction: row-reverse;
+  }
+
+  .ai-chat-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--buttonBgColor);
+    color: var(--buttonFontColor);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .ai-chat-message.user .ai-chat-avatar {
+    background: #e6f2ff;
+    color: var(--editorColor80);
+  }
+
+  .ai-chat-message.assistant .ai-chat-avatar {
+    background: var(--themeColor);
+    color: #fff;
+  }
+
+  .ai-chat-bubble {
+    max-width: 420px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--editorColor10);
+    background: var(--floatBgColor);
+    color: var(--editorColor80);
+    word-break: break-word;
+  }
+
+  .ai-chat-message.user .ai-chat-bubble {
+    background: var(--floatHoverColor);
+  }
+
+  .ai-chat-bubble .markdown-body {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  .ai-chat-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ai-chat-input-wrapper {
+    flex: 1;
+  }
+
+  .ai-chat-input {
+    width: 100%;
+    height: 72px;
+    resize: none;
+    padding: 8px 12px;
+    border: 1px solid var(--editorColor10);
+    border-radius: 6px;
+    background: var(--inputBgColor);
+    color: var(--editorColor80);
+    outline: none;
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+
+  .ai-chat-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .typewriter .editor-component {
