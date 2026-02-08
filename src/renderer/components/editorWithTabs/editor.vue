@@ -538,6 +538,14 @@ export default {
         autoCheck
       } = this
 
+      const aiItems = [
+        { action: 'continue', label: this.$t('Continue Writing') },
+        { action: 'shorten', label: this.$t('Shorten') },
+        { action: 'polish', label: this.$t('Polish') },
+        { action: 'expand', label: this.$t('Expand') },
+        { action: 'chat', label: this.$t('Chat') }
+      ]
+
       // use muya UI plugins
       Muya.use(TablePicker)
       Muya.use(QuickInsert)
@@ -550,7 +558,7 @@ export default {
       })
       Muya.use(Transformer)
       Muya.use(ImageToolbar)
-      Muya.use(FormatPicker)
+      Muya.use(FormatPicker, { aiItems })
       Muya.use(FrontMenu)
       Muya.use(LinkTools, {
         jumpClick: this.jumpClick
@@ -668,6 +676,10 @@ export default {
 
           this.setImageViewerVisible(true)
         }
+      })
+
+      this.editor.on('muya-ai-action', info => {
+        this.handleAiContextAction(info)
       })
 
       // Disabled due to #2120.
@@ -1170,21 +1182,29 @@ export default {
     },
 
     handleAiContextAction (info = {}) {
-      const { action, text } = info
+      const { action, text, cursor } = info
       const actionMap = {
         continue: this.$t('Continue Writing'),
         polish: this.$t('Polish'),
         shorten: this.$t('Shorten'),
-        expand: this.$t('Expand')
+        expand: this.$t('Expand'),
+        chat: this.$t('Chat')
       }
       if (!actionMap[action]) {
         return
       }
+      // 通过编辑器导出的 Markdown 选区文本作为 AI 输入的兜底来源
+      const clipboardData = this.editor && this.editor.contentState
+        ? this.editor.contentState.getClipBoardData()
+        : null
+      // 优先使用事件带来的文本，其次使用编辑器导出的选区文本
+      const selectionText = text || (clipboardData && clipboardData.text) || ''
       this.aiAction = action
       this.aiDialogTitle = actionMap[action]
-      this.aiSelectionText = text || ''
+      this.aiSelectionText = selectionText
       this.aiAllMarkdown = this.editor ? this.editor.getMarkdown() : ''
-      this.aiSelectionCursor = selection.getCursorRange()
+      // 优先使用事件传递的选区游标，避免工具栏点击导致游标变化
+      this.aiSelectionCursor = cursor || selection.getCursorRange()
       this.aiDialogVisible = true
       this.startAiGeneration()
     },
@@ -1208,7 +1228,16 @@ export default {
     },
 
     handleAiApply () {
-      if (!this.aiOutput || !this.aiSelectionCursor) {
+      if (!this.aiOutput) {
+        this.handleAiDialogClose()
+        return
+      }
+      // 再次兜底获取选区，确保有可用游标用于替换
+      if (!this.aiSelectionCursor || !this.aiSelectionCursor.start || !this.aiSelectionCursor.end) {
+        this.aiSelectionCursor = selection.getCursorRange()
+      }
+      // 如果仍然无法获取选区，则中止应用
+      if (!this.aiSelectionCursor || !this.aiSelectionCursor.start || !this.aiSelectionCursor.end) {
         this.handleAiDialogClose()
         return
       }

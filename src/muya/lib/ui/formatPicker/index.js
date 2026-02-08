@@ -1,5 +1,6 @@
 import BaseFloat from '../baseFloat'
 import { patch, h } from '../../parser/render/snabbdom'
+import selection from '../../selection'
 import icons from './config'
 
 import './index.css'
@@ -25,6 +26,11 @@ class FormatPicker extends BaseFloat {
     this.formats = null
     this.options = opts
     this.icons = icons
+    this.aiItems = Array.isArray(opts.aiItems) ? opts.aiItems : []
+    // 记录悬浮工具栏打开时的选区快照，避免点击工具栏后选区丢失
+    this.aiSelectionText = ''
+    // 记录悬浮工具栏打开时的选区游标，确保 AI 应用替换到正确位置
+    this.aiSelectionCursor = null
     const formatContainer = this.formatContainer = document.createElement('div')
     this.container.appendChild(formatContainer)
     this.floatBox.classList.add('ag-format-picker-container')
@@ -37,18 +43,26 @@ class FormatPicker extends BaseFloat {
     eventCenter.subscribe('muya-format-picker', ({ reference, formats }) => {
       if (reference) {
         this.formats = formats
+        // 悬浮工具栏显示时捕获选区游标
+        this.aiSelectionCursor = selection.getCursorRange()
+        // 优先使用 Markdown 选区文本作为 AI 输入
+        const clipboardData = this.muya.contentState.getClipBoardData()
+        this.aiSelectionText = clipboardData && clipboardData.text ? clipboardData.text : this.getSelectionText()
         setTimeout(() => {
           this.show(reference)
           this.render()
         }, 0)
       } else {
+        // 隐藏悬浮工具栏时清理选区快照
+        this.aiSelectionText = ''
+        this.aiSelectionCursor = null
         this.hide()
       }
     })
   }
 
   render () {
-    const { icons, oldVnode, formatContainer, formats } = this
+    const { icons, oldVnode, formatContainer, formats, aiItems } = this
     const children = icons.map(i => {
       let icon
       let iconWrapperSelector
@@ -80,7 +94,24 @@ class FormatPicker extends BaseFloat {
       }, [iconWrapper])
     })
 
-    const vnode = h('ul', children)
+    const aiChildren = aiItems.map(item => {
+      return h('li.ai-item', {
+        attrs: {
+          title: item.title || item.label
+        },
+        on: {
+          click: event => {
+            this.selectAiItem(event, item)
+          }
+        }
+      }, [item.label])
+    })
+
+    const rows = [h('ul.tools-row', children)]
+    if (aiChildren.length) {
+      rows.push(h('ul.ai-row', aiChildren))
+    }
+    const vnode = h('div', rows)
 
     if (oldVnode) {
       patch(oldVnode, vnode)
@@ -103,6 +134,22 @@ class FormatPicker extends BaseFloat {
       this.formats = formats
       this.render()
     }
+  }
+
+  getSelectionText () {
+    const selection = window.getSelection ? window.getSelection() : null
+    return selection ? selection.toString() : ''
+  }
+
+  selectAiItem (event, item) {
+    event.preventDefault()
+    event.stopPropagation()
+    // 使用缓存的选区快照，避免菜单点击导致选区变化
+    const text = this.aiSelectionText || this.getSelectionText()
+    const cursor = this.aiSelectionCursor
+    this.muya.eventCenter.dispatch('muya-ai-action', { action: item.action, text, cursor })
+    // 第二行 AI 菜单点击后关闭悬浮工具栏
+    this.hide()
   }
 }
 

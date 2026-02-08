@@ -3,8 +3,7 @@
   border-radius: 2px;
 }
 .ag-format-picker {
-  height: 28px;
-  width: 265px;
+  min-width: 265px;
 }
 
 .ag-format-picker ul,
@@ -16,6 +15,12 @@
 .ag-format-picker ul {
   padding: 0 7px;
   display: flex;
+}
+
+/* 工具按钮行的样式 */
+
+.ag-format-picker ul.tools-row {
+  height: 20px;
 }
 
 .ag-format-picker li.item {
@@ -45,6 +50,33 @@
   background: var(--editorColor10);
   left: -3px;
   top: 6px;
+}
+
+ /* 下面是 AI 功能按钮行的样式 */
+
+.ag-format-picker ul.ai-row {
+  margin-top: 6px;
+  height: 28px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ag-format-picker ul.ai-row .ai-item {
+  list-style: none;
+  height: 28px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--editorColor);
+}
+
+.ag-format-picker ul.ai-row .ai-item + .ai-item {
+  margin-left: 4px;
+}
+
+.ag-format-picker ul.ai-row .ai-item:hover {
+  background: var(--floatHoverColor);
 }
 
 .ag-format-picker li.item .icon-wrapper {
