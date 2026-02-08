@@ -71,7 +71,7 @@
       :show-close="false"
       :modal="true"
       :close-on-click-modal="false"
-      custom-class="ag-dialog-ai"
+      :custom-class="aiDialogClass"
       width="600px"
       @close="handleAiDialogClose"
     >
@@ -271,6 +271,9 @@ export default {
     },
     aiChatInputTrimmed () {
       return (this.aiChatInput || '').trim()
+    },
+    aiDialogClass () {
+      return this.isAiChat ? 'ag-dialog-ai is-chat' : 'ag-dialog-ai is-non-chat'
     }
   },
 
@@ -1793,6 +1796,9 @@ export default {
     display: flex;
     flex-direction: column;
   }
+  .ag-dialog-ai.is-non-chat {
+    height: auto;
+  }
 
   .ag-dialog-ai .el-dialog__header {
     border-bottom: 1px solid var(--editorColor10);
@@ -1806,6 +1812,10 @@ export default {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+  }
+  .ag-dialog-ai.is-non-chat .el-dialog__body {
+    display: block;
+    flex: initial;
   }
 
   .ag-dialog-ai .el-dialog__footer {
