@@ -9,6 +9,7 @@ import strikeIcon from '../../assets/pngicon/format_strike/2.png'
 import mathIcon from '../../assets/pngicon/format_math/2.png'
 import highlightIcon from '../../assets/pngicon/highlight/2.png'
 import clearIcon from '../../assets/pngicon/format_clear/2.png'
+import translateIcon from '../../assets/pngicon/ai/翻译.png'
 
 const COMMAND_KEY = isOsx ? '⌘' : 'Ctrl'
 
@@ -63,6 +64,11 @@ const icons = [
     tooltip: 'Clear Formatting',
     shortcut: `⇧+${COMMAND_KEY}+R`,
     icon: clearIcon
+  }, {
+    type: 'translate',
+    tooltip: 'Translate',
+    shortcut: '',
+    icon: translateIcon
   }
 ]
 

@@ -1257,7 +1257,8 @@ export default {
         polish: this.$t('Polish'),
         shorten: this.$t('Shorten'),
         expand: this.$t('Expand'),
-        chat: this.$t('Chat')
+        chat: this.$t('Chat'),
+        translate: this.$t('Translate')
       }
       if (!actionMap[action]) {
         return
@@ -1562,6 +1563,8 @@ export default {
         userPrompt = `全文内容是 ${fullText}\n请对以下内容 ${selectionText} 进行合理缩写，保留关键信息，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
       } else if (this.aiAction === 'polish') {
         userPrompt = `全文内容是 ${fullText}\n请对以下内容 ${selectionText} 进行润色，保持原意，语言流畅，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
+      } else if (this.aiAction === 'translate') {
+        userPrompt = `请将以下内容 ${selectionText} 进行翻译，如果是中文则翻译为英文，如果是英文则翻译为中文。直接返回纯文本翻译后的内容即可。无需其他多余字符`
       } else {
         userPrompt = `全文内容是 ${fullText}\n请续写但不要包括以下内容 ${selectionText}，保持上下文一致，可以具有一定创造性，但是内容要真实准确，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
       }

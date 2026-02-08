@@ -2,6 +2,7 @@ const messages = {
   en: {
     AI: 'AI',
     'Continue Writing': 'Continue Writing',
+    Translate: 'Translate',
     Polish: 'Polish',
     Shorten: 'Shorten',
     Expand: 'Expand',
@@ -59,6 +60,7 @@ const messages = {
     Title: '标题',
     AI: 'AI',
     'Continue Writing': '续写',
+    Translate: '翻译',
     Polish: '润色',
     Shorten: '缩写',
     Expand: '扩写',

@@ -148,6 +148,13 @@ class FormatPicker extends BaseFloat {
   selectItem (event, item) {
     event.preventDefault()
     event.stopPropagation()
+    if (item.type === 'translate') {
+      const text = this.aiSelectionText || this.getSelectionText()
+      const cursor = this.aiSelectionCursor
+      this.muya.eventCenter.dispatch('muya-ai-action', { action: 'translate', text, cursor })
+      this.hide()
+      return
+    }
     const { contentState } = this.muya
     contentState.render()
     contentState.format(item.type)
