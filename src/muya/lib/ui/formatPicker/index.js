@@ -2,6 +2,11 @@ import BaseFloat from '../baseFloat'
 import { patch, h } from '../../parser/render/snabbdom'
 import selection from '../../selection'
 import icons from './config'
+import aiContinueIcon from '../../assets/pngicon/ai/续写.png'
+import aiShortenIcon from '../../assets/pngicon/ai/缩写.png'
+import aiPolishIcon from '../../assets/pngicon/ai/润色.png'
+import aiExpandIcon from '../../assets/pngicon/ai/扩写.png'
+import aiChatIcon from '../../assets/pngicon/ai/ai对话.png'
 
 import './index.css'
 
@@ -13,6 +18,14 @@ const defaultOptions = {
     }
   },
   showArrow: false
+}
+
+const AI_ICON_MAP = {
+  continue: aiContinueIcon,
+  shorten: aiShortenIcon,
+  polish: aiPolishIcon,
+  expand: aiExpandIcon,
+  chat: aiChatIcon
 }
 
 class FormatPicker extends BaseFloat {
@@ -95,6 +108,17 @@ class FormatPicker extends BaseFloat {
     })
 
     const aiChildren = aiItems.map(item => {
+      const nodes = []
+      const icon = AI_ICON_MAP[item.action]
+      if (icon) {
+        nodes.push(h('i.ai-png-icon', {
+          style: {
+            background: `url(${icon}) no-repeat`,
+            'background-size': '100%'
+          }
+        }, ''))
+      }
+      nodes.push(h('span.ai-label', item.label))
       return h('li.ai-item', {
         attrs: {
           title: item.title || item.label
@@ -104,7 +128,7 @@ class FormatPicker extends BaseFloat {
             this.selectAiItem(event, item)
           }
         }
-      }, [item.label])
+      }, nodes)
     })
 
     const rows = [h('ul.tools-row', children)]

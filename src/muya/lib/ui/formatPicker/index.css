@@ -71,8 +71,21 @@
   color: var(--editorColor);
 }
 
+.ag-format-picker ul.ai-row .ai-item .ai-png-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  margin-right: 0px;
+  background-color: transparent;
+}
+
+.ag-format-picker ul.ai-row .ai-item .ai-label {
+  font-size: 12px;
+  line-height: 1;
+}
+
 .ag-format-picker ul.ai-row .ai-item + .ai-item {
-  margin-left: 4px;
+  margin-left: 2px;
 }
 
 .ag-format-picker ul.ai-row .ai-item:hover {
