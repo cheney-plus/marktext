@@ -1,16 +1,20 @@
 import { getCurrentWindow, Menu as RemoteMenu, MenuItem as RemoteMenuItem } from '@electron/remote'
-import {
-  CLOSE_THIS,
-  CLOSE_OTHERS,
-  CLOSE_SAVED,
-  CLOSE_ALL,
-  SEPARATOR,
-  RENAME,
-  COPY_PATH,
-  SHOW_IN_FOLDER
-} from './menuItems'
+import { createTabMenuItems } from './menuItems'
+import store from '../../store'
+import { translate } from '../../i18n'
 
 export const showContextMenu = (event, tab) => {
+  const t = key => translate(store.state.preferences.language, key)
+  const {
+    CLOSE_THIS,
+    CLOSE_OTHERS,
+    CLOSE_SAVED,
+    CLOSE_ALL,
+    SEPARATOR,
+    RENAME,
+    COPY_PATH,
+    SHOW_IN_FOLDER
+  } = createTabMenuItems(t)
   const menu = new RemoteMenu()
   const win = getCurrentWindow()
   const { pathname } = tab

@@ -1224,6 +1224,9 @@ const actions = {
     ipcRenderer.on('mt::cm-insert-paragraph', (e, location) => {
       bus.$emit('insertParagraph', location)
     })
+    ipcRenderer.on('mt::cm-ai', (e, info) => {
+      bus.$emit('aiContextAction', info)
+    })
 
     // Spelling
     ipcRenderer.on('mt::spelling-replace-misspelling', (e, info) => {

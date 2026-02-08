@@ -5,12 +5,12 @@
       <div class="search-wrapper">
         <input
           type="text" v-model="keyword"
-          placeholder="Search in folder..."
+          :placeholder="$t('Search in folder...')"
           @keyup="search"
         >
         <div class="controls">
           <span
-            title="Case Sensitive"
+            :title="$t('Case Sensitive')"
             class="is-case-sensitive"
             :class="{'active': isCaseSensitive}"
             @click.stop="caseSensitiveClicked()"
@@ -20,7 +20,7 @@
             </svg>
           </span>
           <span
-            title="Select whole word"
+            :title="$t('Select whole word')"
             class="is-whole-word"
             :class="{'active': isWholeWord}"
             @click.stop="wholeWordClicked()"
@@ -30,7 +30,7 @@
             </svg>
           </span>
           <span
-            title="Use query as RegEx"
+            :title="$t('Use query as RegEx')"
             class="is-regex"
             :class="{'active': isRegexp}"
             @click.stop="regexpClicked()"
@@ -43,9 +43,9 @@
       </div>
 
       <div class="search-message-section" v-if="showNoFolderOpenedMessage">
-        <span>No folder open</span>
+        <span>{{ $t('No folder open') }}</span>
       </div>
-      <div class="search-message-section" v-if="showNoResultFoundMessage">No results found.</div>
+      <div class="search-message-section" v-if="showNoResultFoundMessage">{{ $t('No results found.') }}</div>
       <div class="search-message-section" v-if="searchErrorString">{{ searchErrorString }}</div>
 
       <div
@@ -57,7 +57,7 @@
           size="mini"
           @click="cancelSearcher"
         >
-          Cancel <i class="el-icon-video-pause"></i>
+          {{ $t('Cancel') }} <i class="el-icon-video-pause"></i>
         </el-button>
       </div>
       <div v-if="searchResult.length" class="search-result-info">{{searchResultInfo}}</div>
@@ -78,7 +78,7 @@
             v-if="showNoFolderOpenedMessage"
             @click="openFolder"
           >
-            Open Folder
+            {{ $t('Open Folder') }}
           </button>
         </div>
       </div>
@@ -158,7 +158,11 @@ export default {
         return acc + item.matches.length
       }, 0)
 
-      return `${matchCount} ${matchCount > 1 ? 'matches' : 'match'} in ${fileCount} ${fileCount > 1 ? 'files' : 'file'}`
+      return this.$t('{matches} {matchWord} in {files} {fileWord}')
+        .replace('{matches}', matchCount)
+        .replace('{matchWord}', matchCount > 1 ? this.$t('matches') : this.$t('match'))
+        .replace('{files}', fileCount)
+        .replace('{fileWord}', fileCount > 1 ? this.$t('files') : this.$t('file'))
     },
     showNoFolderOpenedMessage () {
       return !this.projectTree || !this.projectTree.pathname
@@ -228,7 +232,7 @@ export default {
             if (promises.cancel) {
               promises.cancel()
             }
-            this.searchErrorString = 'Search was limited to 100 files.'
+            this.searchErrorString = this.$t('Search was limited to 100 files.')
           }
         },
 

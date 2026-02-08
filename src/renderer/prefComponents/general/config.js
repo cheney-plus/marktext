@@ -1,8 +1,8 @@
-export const titleBarStyleOptions = [{
-  label: 'Custom',
+export const getTitleBarStyleOptions = t => [{
+  label: t('Custom'),
   value: 'custom'
 }, {
-  label: 'Native',
+  label: t('Native'),
   value: 'native'
 }]
 
@@ -47,18 +47,35 @@ export const zoomOptions = [{
   value: 2.0
 }]
 
-export const fileSortByOptions = [{
-  label: 'Creation time',
+export const getFileSortByOptions = t => [{
+  label: t('Creation time'),
   value: 'created'
 }, {
-  label: 'Modification time',
+  label: t('Modification time'),
   value: 'modified'
 }, {
-  label: 'Title',
+  label: t('Title'),
   value: 'title'
 }]
 
-export const languageOptions = [{
-  label: 'English',
+export const getLanguageOptions = t => [{
+  label: t('English'),
   value: 'en'
+}, {
+  label: t('Chinese (Simplified)'),
+  value: 'zh'
+}]
+
+export const getLlmProviderOptions = t => [{
+  label: t('DeepSeek'),
+  value: 'deepseek'
+}, {
+  label: t('Qwen'),
+  value: 'qwen'
+}, {
+  label: t('Doubao'),
+  value: 'doubao'
+}, {
+  label: t('Yuanbao'),
+  value: 'yuanbao'
 }]

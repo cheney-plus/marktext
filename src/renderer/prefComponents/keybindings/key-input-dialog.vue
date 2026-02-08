@@ -23,12 +23,12 @@
           >
         </div>
         <div class="footer">
-          <div class="descriptions">Press Enter to continue or ESC to exit.</div>
+          <div class="descriptions">{{ $t('Press Enter to continue or ESC to exit.') }}</div>
           <div
             v-show="!isKeybindingValid"
             class="invalid-keybinding"
           >
-            Current key combination cannot be bound!
+            {{ $t('Current key combination cannot be bound!') }}
           </div>
         </div>
       </div>
@@ -47,10 +47,8 @@ export default {
   data () {
     this.needCommitOnClose = true
     this.currentKeybinding = null
-    this.defaultPlaceholderText = 'Press a key combination'
     return {
       showKeyInputDialog: false,
-      placeholderText: this.defaultPlaceholderText,
       isKeybindingValid: true,
       keybindingInputValue: ''
     }
@@ -64,6 +62,11 @@ export default {
     }
   },
 
+  computed: {
+    placeholderText () {
+      return this.$t('Press a key combination')
+    }
+  },
   watch: {
     showWithId: function (value, oldValue) {
       if (value !== oldValue) {

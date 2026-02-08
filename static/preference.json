@@ -10,7 +10,9 @@
   "fileSortBy": "created",
   "startUpAction": "lastState",
   "defaultDirectoryToOpen": "",
-  "language": "en",
+  "language": "zh",
+  "llmProvider": "deepseek",
+  "llmBearerToken": "",
 
   "editorFontFamily": "Open Sans",
   "fontSize": 16,
@@ -56,7 +58,8 @@
   "spellcheckerNoUnderline": false,
   "spellcheckerLanguage": "en-US",
 
-  "sideBarVisibility": false,
+  "sideBarVisibility": true,
+  "sideBarVisibilityMigrated": false,
   "tabBarVisibility": false,
   "sourceCodeModeEnabled": false,
 

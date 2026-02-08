@@ -1,61 +1,61 @@
-export const pageSizeList = [
+export const getPageSizeList = t => [
   {
-    label: 'A3 (297mm x 420mm)',
+    label: t('A3 (297mm x 420mm)'),
     value: 'A3'
   }, {
-    label: 'A4 (210mm x 297mm)',
+    label: t('A4 (210mm x 297mm)'),
     value: 'A4'
   }, {
-    label: 'A5 (148mm x 210mm)',
+    label: t('A5 (148mm x 210mm)'),
     value: 'A5'
   }, {
-    label: 'US Legal (8.5" x 13")',
+    label: t('US Legal (8.5" x 13")'),
     value: 'Legal'
   }, {
-    label: 'US Letter (8.5" x 11")',
+    label: t('US Letter (8.5" x 11")'),
     value: 'Letter'
   }, {
-    label: 'Tabloid (17" x 11")',
+    label: t('Tabloid (17" x 11")'),
     value: 'Tabloid'
   }, {
-    label: 'Custom',
+    label: t('Custom'),
     value: 'custom'
   }
 ]
 
-export const headerFooterTypes = [
+export const getHeaderFooterTypes = t => [
   {
-    label: 'None',
+    label: t('None'),
     value: 0
   }, {
-    label: 'Single cell',
+    label: t('Single cell'),
     value: 1
   }, {
-    label: 'Three cells',
+    label: t('Three cells'),
     value: 2
   }
 ]
 
-export const headerFooterStyles = [
+export const getHeaderFooterStyles = t => [
   {
-    label: 'Default',
+    label: t('Default'),
     value: 0
   }, {
-    label: 'Simple',
+    label: t('Simple'),
     value: 1
   }, {
-    label: 'Styled',
+    label: t('Styled'),
     value: 2
   }
 ]
 
-export const exportThemeList = [{
-  label: 'Academic',
+export const getExportThemeList = t => [{
+  label: t('Academic'),
   value: 'academic'
 }, {
-  label: 'GitHub (Default)',
+  label: t('GitHub (Default)'),
   value: 'default'
 }, {
-  label: 'Liber',
+  label: t('Liber'),
   value: 'liber'
 }]

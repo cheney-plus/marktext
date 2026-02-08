@@ -12,6 +12,7 @@ import { normalizeMarkdownPath } from '../filesystem/markdown'
 import { registerKeyboardListeners } from '../keyboard'
 import { selectTheme } from '../menu/actions/theme'
 import { dockMenu } from '../menu/templates'
+import { getTranslator } from '../i18n'
 import registerSpellcheckerListeners from '../spellchecker'
 import { watchers } from '../utils/imagePathAutoComplement'
 import { WindowType } from '../windows/base'
@@ -174,19 +175,23 @@ class App {
           nativeTheme.themeSource = isDarkMode ? 'dark' : 'light'
         }
       }
+      if (change.language && isOsx) {
+        app.dock.setMenu(dockMenu(preferences))
+      }
     })
 
     if (isOsx) {
-      app.dock.setMenu(dockMenu)
+      app.dock.setMenu(dockMenu(preferences))
     } else if (isWindows) {
+      const t = getTranslator(preferences.getItem('language') || preferences.getAll().language)
       app.setJumpList([{
         type: 'recent'
       }, {
         type: 'tasks',
         items: [{
           type: 'task',
-          title: 'New Window',
-          description: 'Opens a new window',
+          title: t('New Window'),
+          description: t('Opens a new window'),
           program: process.execPath,
           args: '--new-window',
           iconPath: process.execPath,

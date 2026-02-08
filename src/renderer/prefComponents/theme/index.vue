@@ -1,6 +1,6 @@
 <template>
   <div class="pref-theme">
-    <h4>Theme</h4>
+    <h4>{{ $t('Theme') }}</h4>
     <section class="offcial-themes">
       <div v-for="t of themes" :key="t.name" class="theme"
         :class="[t.name, { 'active': t.name === theme }]"
@@ -11,7 +11,7 @@
     </section>
     <separator></separator>
     <cur-select
-      description="Automatically adjust application theme according to system settings"
+      :description="$t('Automatically adjust application theme according to system settings')"
       :value="autoSwitchTheme"
       :options="autoSwitchThemeOptions"
       :onChange="value => onSelectChange('autoSwitchTheme', value)"
@@ -19,13 +19,13 @@
     <separator v-show="false"></separator>
     <section v-show="false" class="import-themes ag-underdevelop">
       <div>
-        <span>Open the themes folder</span>
-        <el-button size="small">Open Folder</el-button>
+        <span>{{ $t('Open the themes folder') }}</span>
+        <el-button size="small">{{ $t('Open Folder') }}</el-button>
       </div>
 
       <div>
-        <span>Import custom themes</span>
-        <el-button size="small">Import Theme</el-button>
+        <span>{{ $t('Import custom themes') }}</span>
+        <el-button size="small">{{ $t('Import Theme') }}</el-button>
       </div>
     </section>
   </div>
@@ -34,7 +34,7 @@
 <script>
 import { mapState } from 'vuex'
 import themeMd from './theme.md'
-import { autoSwitchThemeOptions, themes } from './config'
+import { getAutoSwitchThemeOptions, themes } from './config'
 import markdownToHtml from '@/util/markdownToHtml'
 import CurSelect from '../common/select'
 import Separator from '../common/separator'
@@ -45,12 +45,14 @@ export default {
     Separator
   },
   data () {
-    this.autoSwitchThemeOptions = autoSwitchThemeOptions
     return {
       themes: []
     }
   },
   computed: {
+    autoSwitchThemeOptions () {
+      return getAutoSwitchThemeOptions(this.$t)
+    },
     ...mapState({
       autoSwitchTheme: state => state.preferences.autoSwitchTheme,
       theme: state => state.preferences.theme

@@ -1,13 +1,13 @@
 <template>
   <div class="pref-editor">
-    <h4>Editor</h4>
+    <h4>{{ $t('Editor') }}</h4>
     <compound>
       <template #head>
-        <h6 class="title">Text editor settings:</h6>
+        <h6 class="title">{{ $t('Text editor settings:') }}</h6>
       </template>
       <template #children>
         <range
-          description="Font size"
+          :description="$t('Font size')"
           :value="fontSize"
           :min="12"
           :max="32"
@@ -16,7 +16,7 @@
           :onChange="value => onSelectChange('fontSize', value)"
         ></range>
         <range
-          description="Line height"
+          :description="$t('Line height')"
           :value="lineHeight"
           :min="1.2"
           :max="2.0"
@@ -24,13 +24,13 @@
           :onChange="value => onSelectChange('lineHeight', value)"
         ></range>
         <font-text-box
-          description="Font family"
+          :description="$t('Font family')"
           :value="editorFontFamily"
           :onChange="value => onSelectChange('editorFontFamily', value)"
         ></font-text-box>
         <text-box
-          description="Maximum width of text editor"
-          notes="Leave empty for theme default, otherwise use number with unit suffix, which is one of 'ch' for characters, 'px' for pixels, or '%' for percentage."
+          :description="$t('Maximum width of text editor')"
+          :notes="$t(\"Leave empty for theme default, otherwise use number with unit suffix, which is one of 'ch' for characters, 'px' for pixels, or '%' for percentage.\")"
           :input="editorLineWidth"
           :regexValidator="/^(?:$|[0-9]+(?:ch|px|%)$)/"
           :onChange="value => onSelectChange('editorLineWidth', value)"
@@ -40,11 +40,11 @@
 
     <compound>
       <template #head>
-        <h6 class="title">Code block settings:</h6>
+        <h6 class="title">{{ $t('Code block settings:') }}</h6>
       </template>
       <template #children>
         <range
-          description="Font size"
+          :description="$t('Font size')"
           :value="codeFontSize"
           :min="12"
           :max="28"
@@ -53,7 +53,7 @@
           :onChange="value => onSelectChange('codeFontSize', value)"
         ></range>
         <font-text-box
-          description="Font family"
+          :description="$t('Font family')"
           :onlyMonospace="true"
           :value="codeFontFamily"
           :onChange="value => onSelectChange('codeFontFamily', value)"
@@ -61,12 +61,12 @@
         <!-- FIXME: Disabled due to #1648. -->
         <bool
           v-show="false"
-          description="Show line numbers"
+          :description="$t('Show line numbers')"
           :bool="codeBlockLineNumbers"
           :onChange="value => onSelectChange('codeBlockLineNumbers', value)"
         ></bool>
         <bool
-          description="Remove leading and trailing empty lines"
+          :description="$t('Remove leading and trailing empty lines')"
           :bool="trimUnnecessaryCodeBlockEmptyLines"
           :onChange="value => onSelectChange('trimUnnecessaryCodeBlockEmptyLines', value)"
         ></bool>
@@ -75,21 +75,21 @@
 
     <compound>
       <template #head>
-        <h6 class="title">Writing behavior:</h6>
+        <h6 class="title">{{ $t('Writing behavior:') }}</h6>
       </template>
       <template #children>
         <bool
-          description="Automatically close brackets when writing"
+          :description="$t('Automatically close brackets when writing')"
           :bool="autoPairBracket"
           :onChange="value => onSelectChange('autoPairBracket', value)"
         ></bool>
         <bool
-          description="Automatically complete markdown syntax"
+          :description="$t('Automatically complete markdown syntax')"
           :bool="autoPairMarkdownSyntax"
           :onChange="value => onSelectChange('autoPairMarkdownSyntax', value)"
         ></bool>
         <bool
-          description="Automatically close quotation marks"
+          :description="$t('Automatically close quotation marks')"
           :bool="autoPairQuote"
           :onChange="value => onSelectChange('autoPairQuote', value)"
         ></bool>
@@ -98,34 +98,34 @@
 
     <compound>
       <template #head>
-        <h6 class="title">File representation:</h6>
+        <h6 class="title">{{ $t('File representation:') }}</h6>
       </template>
       <template #children>
         <cur-select
-          description="Preferred tab width"
+          :description="$t('Preferred tab width')"
           :value="tabSize"
           :options="tabSizeOptions"
           :onChange="value => onSelectChange('tabSize', value)"
         ></cur-select>
         <cur-select
-          description="Line separator type"
+          :description="$t('Line separator type')"
           :value="endOfLine"
           :options="endOfLineOptions"
           :onChange="value => onSelectChange('endOfLine', value)"
         ></cur-select>
         <cur-select
-          description="Default encoding"
+          :description="$t('Default encoding')"
           :value="defaultEncoding"
           :options="defaultEncodingOptions"
           :onChange="value => onSelectChange('defaultEncoding', value)"
         ></cur-select>
         <bool
-          description="Automatically detect file encoding"
+          :description="$t('Automatically detect file encoding')"
           :bool="autoGuessEncoding"
           :onChange="value => onSelectChange('autoGuessEncoding', value)"
         ></bool>
         <cur-select
-          description="Handling of trailing newline characters"
+          :description="$t('Handling of trailing newline characters')"
           :value="trimTrailingNewline"
           :options="trimTrailingNewlineOptions"
           :onChange="value => onSelectChange('trimTrailingNewline', value)"
@@ -135,27 +135,33 @@
 
     <compound>
       <template #head>
-        <h6 class="title">Misc:</h6>
+        <h6 class="title">{{ $t('Misc:') }}</h6>
       </template>
       <template #children>
         <cur-select
-          description="Text direction"
+          :description="$t('AI Generated Content Mark:')"
+          :value="aiGeneratedMark"
+          :options="aiGeneratedMarkOptions"
+          :onChange="value => onSelectChange('aiGeneratedMark', value)"
+        ></cur-select>
+        <cur-select
+          :description="$t('Text direction')"
           :value="textDirection"
           :options="textDirectionOptions"
           :onChange="value => onSelectChange('textDirection', value)"
         ></cur-select>
         <bool
-          description="Hide hint for selecting type of new paragraph"
+          :description="$t('Hide hint for selecting type of new paragraph')"
           :bool="hideQuickInsertHint"
           :onChange="value => onSelectChange('hideQuickInsertHint', value)"
         ></bool>
         <bool
-          description="Hide popup when cursor is over link"
+          :description="$t('Hide popup when cursor is over link')"
           :bool="hideLinkPopup"
           :onChange="value => onSelectChange('hideLinkPopup', value)"
         ></bool>
         <bool
-          description="Whether to automatically check any related tasks"
+          :description="$t('Whether to automatically check any related tasks')"
           :bool="autoCheck"
           :onChange="value => onSelectChange('autoCheck', value)"
         ></bool>
@@ -175,10 +181,11 @@ import Separator from '../common/separator'
 import TextBox from '../common/textBox'
 import {
   tabSizeOptions,
-  endOfLineOptions,
-  textDirectionOptions,
-  trimTrailingNewlineOptions,
-  getDefaultEncodingOptions
+  getEndOfLineOptions,
+  getTextDirectionOptions,
+  getTrimTrailingNewlineOptions,
+  getDefaultEncodingOptions,
+  getAiGeneratedMarkOptions
 } from './config'
 
 export default {
@@ -191,15 +198,25 @@ export default {
     Separator,
     TextBox
   },
-  data () {
-    this.tabSizeOptions = tabSizeOptions
-    this.endOfLineOptions = endOfLineOptions
-    this.textDirectionOptions = textDirectionOptions
-    this.trimTrailingNewlineOptions = trimTrailingNewlineOptions
-    this.defaultEncodingOptions = getDefaultEncodingOptions()
-    return {}
-  },
   computed: {
+    tabSizeOptions () {
+      return tabSizeOptions
+    },
+    endOfLineOptions () {
+      return getEndOfLineOptions(this.$t)
+    },
+    textDirectionOptions () {
+      return getTextDirectionOptions(this.$t)
+    },
+    aiGeneratedMarkOptions () {
+      return getAiGeneratedMarkOptions(this.$t)
+    },
+    trimTrailingNewlineOptions () {
+      return getTrimTrailingNewlineOptions(this.$t)
+    },
+    defaultEncodingOptions () {
+      return getDefaultEncodingOptions()
+    },
     ...mapState({
       fontSize: state => state.preferences.fontSize,
       editorFontFamily: state => state.preferences.editorFontFamily,
@@ -217,6 +234,7 @@ export default {
       hideQuickInsertHint: state => state.preferences.hideQuickInsertHint,
       hideLinkPopup: state => state.preferences.hideLinkPopup,
       autoCheck: state => state.preferences.autoCheck,
+      aiGeneratedMark: state => state.preferences.aiGeneratedMark,
       editorLineWidth: state => state.preferences.editorLineWidth,
       defaultEncoding: state => state.preferences.defaultEncoding,
       autoGuessEncoding: state => state.preferences.autoGuessEncoding,

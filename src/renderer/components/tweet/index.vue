@@ -8,11 +8,11 @@
       width="450px"
     >
       <div slot="title" class="title">
-        <span>Send us feedback via tweet</span>
+        <span>{{ $t('Send us feedback via tweet') }}</span>
       </div>
       <div class="body">
         <div class="feeling">
-          <div>What's your experience feelings?</div>
+          <div>{{ $t('What is your experience?') }}</div>
           <ul>
             <li
               :class="{ 'active': selectedFace === 'smile' }"
@@ -33,7 +33,7 @@
           </ul>
         </div>
         <div class="feedback">
-          <div>Tell us your feedback?</div>
+          <div>{{ $t('Tell us your feedback') }}</div>
           <textarea
             cols="30" rows="10" v-model="value" ref="textarea"
           ></textarea>
@@ -47,7 +47,7 @@
             <svg class="icon" aria-hidden="true">
               <use xlink:href="#icon-github"></use>
             </svg>
-            Report bug or feature request via github
+            {{ $t('Report bug or feature request via GitHub') }}
           </a>
           <a
             href="javascript:;"
@@ -58,7 +58,7 @@
             <svg class="icon" aria-hidden="true">
               <use xlink:href="#icon-twitter"></use>
             </svg>
-            Tweet
+            {{ $t('Tweet') }}
           </a>
         </div>
       </div>

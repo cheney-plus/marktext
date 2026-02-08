@@ -63,6 +63,10 @@ const actions = {
     const { windowId } = global.marktext.env
     const { showTabBar, showSideBar } = state
     ipcRenderer.send('mt::view-layout-changed', windowId, { showTabBar, showSideBar })
+    ipcRenderer.send('mt::set-user-preference', {
+      sideBarVisibility: showSideBar,
+      tabBarVisibility: showTabBar
+    })
   },
 
   CHANGE_SIDE_BAR_WIDTH ({ commit }, width) {

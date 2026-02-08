@@ -1,18 +1,7 @@
 import { Menu, MenuItem } from 'electron'
-import {
-  CUT,
-  COPY,
-  PASTE,
-  COPY_AS_MARKDOWN,
-  COPY_AS_HTML,
-  PASTE_AS_PLAIN_TEXT,
-  SEPARATOR,
-  INSERT_BEFORE,
-  INSERT_AFTER
-} from './menuItems'
+import { createAiMenuItems, createMenuItems } from './menuItems'
 import spellcheckMenuBuilder from './spellcheck'
-
-const CONTEXT_ITEMS = [INSERT_BEFORE, INSERT_AFTER, SEPARATOR, CUT, COPY, PASTE, SEPARATOR, COPY_AS_MARKDOWN, COPY_AS_HTML, PASTE_AS_PLAIN_TEXT]
+import { getTranslator } from '../../i18n'
 
 const isInsideEditor = params => {
   const { isEditable, editFlags, inputFieldType } = params
@@ -20,8 +9,22 @@ const isInsideEditor = params => {
   return isEditable && inputFieldType === 'none' && !!editFlags.canEditRichly
 }
 
-export const showEditorContextMenu = (win, event, params, isSpellcheckerEnabled) => {
+export const showEditorContextMenu = (win, event, params, isSpellcheckerEnabled, language) => {
   const { isEditable, hasImageContents, selectionText, editFlags, misspelledWord, dictionarySuggestions } = params
+  const t = getTranslator(language)
+  const {
+    CUT,
+    COPY,
+    PASTE,
+    COPY_AS_MARKDOWN,
+    COPY_AS_HTML,
+    PASTE_AS_PLAIN_TEXT,
+    SEPARATOR,
+    INSERT_BEFORE,
+    INSERT_AFTER
+  } = createMenuItems(t)
+  const { AI_GROUP } = createAiMenuItems(t, selectionText)
+  const CONTEXT_ITEMS = [INSERT_BEFORE, INSERT_AFTER, SEPARATOR, CUT, COPY, PASTE, SEPARATOR, COPY_AS_MARKDOWN, COPY_AS_HTML, PASTE_AS_PLAIN_TEXT]
 
   // NOTE: We have to get the word suggestions from this event because `webFrame.getWordSuggestions` and
   //       `webFrame.isWordMisspelled` doesn't work on Windows (Electron#28684).
@@ -35,11 +38,16 @@ export const showEditorContextMenu = (win, event, params, isSpellcheckerEnabled)
 
     const menu = new Menu()
     if (isSpellcheckerEnabled) {
-      const spellingSubmenu = spellcheckMenuBuilder(isMisspelled, misspelledWord, dictionarySuggestions)
+      const spellingSubmenu = spellcheckMenuBuilder(isMisspelled, misspelledWord, dictionarySuggestions, t)
       menu.append(new MenuItem({
-        label: 'Spelling...',
+        label: t('Spelling...'),
         submenu: spellingSubmenu
       }))
+      menu.append(new MenuItem(SEPARATOR))
+    }
+
+    if (hasText) {
+      menu.append(new MenuItem(AI_GROUP))
       menu.append(new MenuItem(SEPARATOR))
     }
 

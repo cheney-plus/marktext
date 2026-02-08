@@ -3,11 +3,13 @@ import VueElectron from 'vue-electron'
 import sourceMapSupport from 'source-map-support'
 import bootstrapRenderer from './bootstrap'
 import VueRouter from 'vue-router'
-import lang from 'element-ui/lib/locale/lang/en'
+import enLocale from 'element-ui/lib/locale/lang/en'
+import zhLocale from 'element-ui/lib/locale/lang/zh-CN'
 import locale from 'element-ui/lib/locale'
 import axios from './axios'
 import store from './store'
 import './assets/symbolIcon'
+import { translate } from './i18n'
 import {
   Dialog,
   Form,
@@ -58,8 +60,19 @@ addElementStyle()
 // -----------------------------------------------
 // Be careful when changing code before this line!
 
-// Configure Vue
-locale.use(lang)
+const applyElementLocale = language => {
+  locale.use(language === 'zh' ? zhLocale : enLocale)
+}
+
+applyElementLocale(store.state.preferences.language)
+store.watch(
+  state => state.preferences.language,
+  language => applyElementLocale(language)
+)
+
+Vue.prototype.$t = function (key) {
+  return translate(store.state.preferences.language, key)
+}
 
 Vue.use(Dialog)
 Vue.use(Form)

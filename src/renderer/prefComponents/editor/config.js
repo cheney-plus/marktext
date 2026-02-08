@@ -14,37 +14,57 @@ export const tabSizeOptions = [{
   value: 4
 }]
 
-export const endOfLineOptions = [{
-  label: 'Default',
+export const getEndOfLineOptions = t => [{
+  label: t('Default'),
   value: 'default'
 }, {
-  label: 'Carriage return and line feed (CRLF)',
+  label: t('Carriage return and line feed (CRLF)'),
   value: 'crlf'
 }, {
-  label: 'Line feed (LF)',
+  label: t('Line feed (LF)'),
   value: 'lf'
 }]
 
-export const trimTrailingNewlineOptions = [{
-  label: 'Trim all trailing',
+export const getTrimTrailingNewlineOptions = t => [{
+  label: t('Trim all trailing'),
   value: 0
 }, {
-  label: 'Ensure exactly one trailing',
+  label: t('Ensure exactly one trailing'),
   value: 1
 }, {
-  label: 'Preserve style of original document',
+  label: t('Preserve style of original document'),
   value: 2
 }, {
-  label: 'Do nothing',
+  label: t('Do nothing'),
   value: 3
 }]
 
-export const textDirectionOptions = [{
-  label: 'Left to Right',
+export const getTextDirectionOptions = t => [{
+  label: t('Left to Right'),
   value: 'ltr'
 }, {
-  label: 'Right to Left',
+  label: t('Right to Left'),
   value: 'rtl'
+}]
+
+export const getAiGeneratedMarkOptions = t => [{
+  label: t('AI Mark None'),
+  value: 'none'
+}, {
+  label: t('AI Mark Bold'),
+  value: 'bold'
+}, {
+  label: t('AI Mark Highlight'),
+  value: 'highlight'
+}, {
+  label: t('AI Mark Underline'),
+  value: 'underline'
+}, {
+  label: t('AI Mark Italic'),
+  value: 'italic'
+}, {
+  label: t('AI Mark Inline Formula'),
+  value: 'inlineFormula'
 }]
 
 let defaultEncodingOptions = null

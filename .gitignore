@@ -15,3 +15,11 @@ thumbs.db
 .idea
 .env
 .eslintcache
+
+# Local Cache and Temporary files
+Library/
+.npm/
+.yarnrc
+.marktext-dev/
+.electron-gyp/
+.config/

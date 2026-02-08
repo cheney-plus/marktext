@@ -66,6 +66,38 @@
         </el-button>
       </div>
     </el-dialog>
+    <el-dialog
+      :visible.sync="aiDialogVisible"
+      :show-close="false"
+      :modal="true"
+      custom-class="ag-dialog-ai"
+      width="560px"
+      @close="handleAiDialogClose"
+    >
+      <div slot="title" class="ai-dialog-title">
+        <button class="ai-back" @click="handleAiDialogClose">
+          <i class="el-icon-arrow-left"></i>
+        </button>
+        <span class="ai-title">{{ aiDialogTitle }}</span>
+      </div>
+      <div class="ai-dialog-body">
+        <div ref="aiOutput" class="ai-output">{{ aiOutput }}</div>
+        <div class="ai-meta">
+          <span class="ai-hint">{{ $t('AI generated content') }}</span>
+          <span class="ai-count">{{ aiWordCountLabel }}</span>
+        </div>
+      </div>
+      <div slot="footer" class="ai-footer">
+        <template v-if="aiGenerating">
+          <el-button type="primary" @click="handleAiPause">{{ $t('Pause') }}</el-button>
+        </template>
+        <template v-else>
+          <el-button @click="handleAiDiscard">{{ $t('Discard') }}</el-button>
+          <el-button @click="handleAiRewrite">{{ $t('Rewrite') }}</el-button>
+          <el-button type="primary" @click="handleAiApply">{{ $t('Apply Replace') }}</el-button>
+        </template>
+      </div>
+    </el-dialog>
     <search
       v-if="!sourceCode"
     ></search>
@@ -105,6 +137,8 @@ import { moveImageToFolder, moveToRelativeFolder, uploadImage } from '@/util/fil
 import { guessClipboardFilePath } from '@/util/clipboard'
 import { getCssForOptions, getHtmlToc } from '@/util/pdf'
 import { addCommonStyle, setEditorWidth } from '@/util/theme'
+import selection from 'muya/lib/selection'
+import { callExternalLlmStream } from '@/util/llm'
 
 import 'muya/themes/default.css'
 import '@/assets/themes/codemirror/one-dark.css'
@@ -165,6 +199,7 @@ export default {
       spellcheckerEnabled: state => state.preferences.spellcheckerEnabled,
       spellcheckerNoUnderline: state => state.preferences.spellcheckerNoUnderline,
       spellcheckerLanguage: state => state.preferences.spellcheckerLanguage,
+      aiGeneratedMark: state => state.preferences.aiGeneratedMark,
 
       currentFile: state => state.editor.currentFile,
       projectTree: state => state.project.projectTree,
@@ -173,7 +208,10 @@ export default {
       typewriter: state => state.preferences.typewriter,
       focus: state => state.preferences.focus,
       sourceCode: state => state.preferences.sourceCode
-    })
+    }),
+    aiWordCountLabel () {
+      return `${this.$t('Word Count')}: ${this.aiWordCount}`
+    }
   },
 
   data () {
@@ -187,6 +225,20 @@ export default {
       isShowClose: false,
       dialogTableVisible: false,
       imageViewerVisible: false,
+      aiDialogVisible: false,
+      aiDialogTitle: '',
+      aiAction: '',
+      aiOutput: '',
+      aiPendingText: '',
+      aiStreamBuffer: '',
+      aiWordCount: 0,
+      aiGenerating: false,
+      aiSelectionCursor: null,
+      aiSelectionText: '',
+      aiAllMarkdown: '',
+      aiStream: null,
+      aiStreamCancel: null,
+      aiTypewriterTimer: null,
       tableChecker: {
         rows: 4,
         columns: 3
@@ -592,6 +644,7 @@ export default {
       bus.$on('switch-spellchecker-language', this.switchSpellcheckLanguage)
       bus.$on('open-command-spellchecker-switch-language', this.openSpellcheckerLanguageCommand)
       bus.$on('replace-misspelling', this.replaceMisspelling)
+      bus.$on('aiContextAction', this.handleAiContextAction)
 
       this.editor.on('change', changes => {
         // WORKAROUND: "id: 'muya'"
@@ -1114,6 +1167,259 @@ export default {
       if (this.editor) {
         document.execCommand('paste')
       }
+    },
+
+    handleAiContextAction (info = {}) {
+      const { action, text } = info
+      const actionMap = {
+        continue: this.$t('Continue Writing'),
+        polish: this.$t('Polish'),
+        shorten: this.$t('Shorten'),
+        expand: this.$t('Expand')
+      }
+      if (!actionMap[action]) {
+        return
+      }
+      this.aiAction = action
+      this.aiDialogTitle = actionMap[action]
+      this.aiSelectionText = text || ''
+      this.aiAllMarkdown = this.editor ? this.editor.getMarkdown() : ''
+      this.aiSelectionCursor = selection.getCursorRange()
+      this.aiDialogVisible = true
+      this.startAiGeneration()
+    },
+
+    handleAiDialogClose () {
+      this.stopAiGeneration()
+      this.resetAiState()
+      this.aiDialogVisible = false
+    },
+
+    handleAiPause () {
+      this.stopAiGeneration()
+    },
+
+    handleAiDiscard () {
+      this.handleAiDialogClose()
+    },
+
+    handleAiRewrite () {
+      this.startAiGeneration()
+    },
+
+    handleAiApply () {
+      if (!this.aiOutput || !this.aiSelectionCursor) {
+        this.handleAiDialogClose()
+        return
+      }
+      const markStyles = {
+        none: { prefix: '', suffix: '' },
+        bold: { prefix: '**', suffix: '**' },
+        highlight: { prefix: '<mark>', suffix: '</mark>' },
+        underline: { prefix: '<u>', suffix: '</u>' },
+        italic: { prefix: '*', suffix: '*' },
+        inlineFormula: { prefix: '`', suffix: '`' }
+      }
+      const { prefix, suffix } = markStyles[this.aiGeneratedMark] || markStyles.none
+      const markedText = `${prefix}${this.aiOutput}${suffix}`
+      if (this.aiAction === 'continue' && this.aiSelectionCursor.end) {
+        const { end } = this.aiSelectionCursor
+        selection.setCursorRange({ anchor: end, focus: end })
+      } else {
+        selection.setCursorRange(this.aiSelectionCursor)
+      }
+      this.focusEditor()
+      document.execCommand('insertText', false, markedText)
+      this.handleAiDialogClose()
+    },
+
+    startAiGeneration () {
+      this.stopAiGeneration()
+      this.aiOutput = ''
+      this.aiPendingText = ''
+      this.aiStreamBuffer = ''
+      this.aiWordCount = 0
+      this.aiGenerating = true
+      this.runAiRequest()
+    },
+
+    stopAiGeneration () {
+      if (this.aiStreamCancel) {
+        this.aiStreamCancel()
+      }
+      this.aiStreamCancel = null
+      this.aiGenerating = false
+      this.detachAiStream()
+      this.aiPendingText = ''
+      this.aiStreamBuffer = ''
+      this.stopAiTypewriter()
+    },
+
+    resetAiState () {
+      this.aiAction = ''
+      this.aiDialogTitle = ''
+      this.aiOutput = ''
+      this.aiPendingText = ''
+      this.aiStreamBuffer = ''
+      this.aiWordCount = 0
+      this.aiSelectionCursor = null
+      this.aiSelectionText = ''
+      this.aiAllMarkdown = ''
+    },
+
+    async runAiRequest () {
+      const messages = this.buildAiMessages()
+      const result = await callExternalLlmStream({ messages })
+      if (!result || !result.stream) {
+        this.aiGenerating = false
+        notice.error({
+          title: this.$t('AI'),
+          message: this.$t('Failed to start AI request')
+        })
+        return
+      }
+      const { stream, cancel } = result
+      this.aiStream = stream
+      this.aiStreamCancel = cancel
+      this.attachAiStream()
+    },
+
+    attachAiStream () {
+      if (!this.aiStream) {
+        return
+      }
+      this.aiStream.on('data', this.handleAiStreamData)
+      this.aiStream.on('end', this.handleAiStreamEnd)
+      this.aiStream.on('error', this.handleAiStreamError)
+    },
+
+    detachAiStream () {
+      if (!this.aiStream) {
+        return
+      }
+      this.aiStream.removeListener('data', this.handleAiStreamData)
+      this.aiStream.removeListener('end', this.handleAiStreamEnd)
+      this.aiStream.removeListener('error', this.handleAiStreamError)
+      this.aiStream = null
+    },
+
+    handleAiStreamData (chunk) {
+      const text = chunk.toString()
+      this.aiStreamBuffer += text
+      this.consumeAiStreamBuffer()
+    },
+
+    handleAiStreamEnd () {
+      this.aiGenerating = false
+      this.detachAiStream()
+      if (!this.aiPendingText) {
+        this.stopAiTypewriter()
+      }
+    },
+
+    handleAiStreamError () {
+      this.aiGenerating = false
+      this.detachAiStream()
+      this.stopAiTypewriter()
+    },
+
+    consumeAiStreamBuffer () {
+      const lines = this.aiStreamBuffer.split(/\r?\n/)
+      this.aiStreamBuffer = lines.pop() || ''
+      for (const rawLine of lines) {
+        const line = rawLine.trim()
+        if (!line.startsWith('data:')) {
+          continue
+        }
+        const data = line.replace(/^data:\s*/, '')
+        if (!data) {
+          continue
+        }
+        if (data === '[DONE]') {
+          this.handleAiStreamEnd()
+          continue
+        }
+        let payload = null
+        try {
+          payload = JSON.parse(data)
+        } catch (error) {
+          continue
+        }
+        const delta = (((payload || {}).choices || [])[0] || {}).delta || {}
+        const content = delta.content || (((payload || {}).choices || [])[0] || {}).message?.content || ((payload || {}).choices || [])[0]?.text || ''
+        if (content) {
+          this.enqueueAiText(content)
+        }
+      }
+    },
+
+    enqueueAiText (text) {
+      this.aiPendingText += text
+      this.startAiTypewriter()
+    },
+
+    startAiTypewriter () {
+      if (this.aiTypewriterTimer) {
+        return
+      }
+      this.aiTypewriterTimer = setInterval(() => {
+        if (!this.aiPendingText) {
+          if (!this.aiGenerating) {
+            this.stopAiTypewriter()
+          }
+          return
+        }
+        const step = Math.min(3, this.aiPendingText.length)
+        const chunk = this.aiPendingText.slice(0, step)
+        this.aiPendingText = this.aiPendingText.slice(step)
+        this.aiOutput += chunk
+        this.aiWordCount = this.calculateAiWordCount(this.aiOutput)
+        this.$nextTick(this.scrollAiOutputToBottom)
+      }, 20)
+    },
+
+    stopAiTypewriter () {
+      if (this.aiTypewriterTimer) {
+        clearInterval(this.aiTypewriterTimer)
+        this.aiTypewriterTimer = null
+      }
+    },
+
+    scrollAiOutputToBottom () {
+      const output = this.$refs.aiOutput
+      if (output) {
+        output.scrollTop = output.scrollHeight
+      }
+    },
+
+    calculateAiWordCount (text) {
+      return (text || '').replace(/\s/g, '').length
+    },
+
+    buildAiMessages () {
+      const systemPrompt = '你是一位精通知识的学者，擅长语言与文字表达能力，请辅助用户完成他的文字编辑与文章内容撰写，要求实事求是，不得捏造虚假内容，要求语言流畅、逻辑清晰有条理，语言精炼不冗余。'
+      const fullText = this.aiAllMarkdown || ''
+      const selectionText = this.aiSelectionText || ''
+      let userPrompt = ''
+      if (this.aiAction === 'expand') {
+        userPrompt = `全文内容是 ${fullText}\n请对以下内容 ${selectionText} 进行合理扩写，内容不要啰嗦冗余，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
+      } else if (this.aiAction === 'shorten') {
+        userPrompt = `全文内容是 ${fullText}\n请对以下内容 ${selectionText} 进行合理缩写，保留关键信息，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
+      } else if (this.aiAction === 'polish') {
+        userPrompt = `全文内容是 ${fullText}\n请对以下内容 ${selectionText} 进行润色，保持原意，语言流畅，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
+      } else {
+        userPrompt = `全文内容是 ${fullText}\n请续写以下内容 ${selectionText}，保持上下文一致，可以具有一定创造性，但是内容要真实准确，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
+      }
+      return [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        {
+          role: 'user',
+          content: userPrompt
+        }
+      ]
     }
   },
   beforeDestroy () {
@@ -1146,6 +1452,7 @@ export default {
     bus.$off('switch-spellchecker-language', this.switchSpellcheckLanguage)
     bus.$off('open-command-spellchecker-switch-language', this.openSpellcheckerLanguageCommand)
     bus.$off('replace-misspelling', this.replaceMisspelling)
+    bus.$off('aiContextAction', this.handleAiContextAction)
 
     document.removeEventListener('keyup', this.keyup)
 

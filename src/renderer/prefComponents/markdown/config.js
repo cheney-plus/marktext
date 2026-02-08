@@ -17,52 +17,52 @@ export const orderListDelimiterOptions = [{
   value: ')'
 }]
 
-export const preferHeadingStyleOptions = [{
-  label: 'ATX heading',
+export const getPreferHeadingStyleOptions = t => [{
+  label: t('ATX heading'),
   value: 'atx'
 }, {
-  label: 'Setext heading',
+  label: t('Setext heading'),
   value: 'setext'
 }]
 
-export const listIndentationOptions = [{
-  label: 'DocFX style',
+export const getListIndentationOptions = t => [{
+  label: t('DocFX style'),
   value: 'dfm'
 }, {
-  label: 'True tab character',
+  label: t('True tab character'),
   value: 'tab'
 }, {
-  label: 'Single space character',
+  label: t('Single space character'),
   value: 1
 }, {
-  label: 'Two space characters',
+  label: t('Two space characters'),
   value: 2
 }, {
-  label: 'Three space characters',
+  label: t('Three space characters'),
   value: 3
 }, {
-  label: 'Four space characters',
+  label: t('Four space characters'),
   value: 4
 }]
 
-export const frontmatterTypeOptions = [{
-  label: 'YAML',
+export const getFrontmatterTypeOptions = t => [{
+  label: t('YAML'),
   value: '-'
 }, {
-  label: 'TOML',
+  label: t('TOML'),
   value: '+'
 }, {
-  label: 'JSON (;;;)',
+  label: t('JSON (;;;)'),
   value: ';'
 }, {
-  label: 'JSON ({})',
+  label: t('JSON ({})'),
   value: '{'
 }]
 
-export const sequenceThemeOptions = [{
-  label: 'Hand drawn',
+export const getSequenceThemeOptions = t => [{
+  label: t('Hand drawn'),
   value: 'hand'
 }, {
-  label: 'Simple',
+  label: t('Simple'),
   value: 'simple'
 }]

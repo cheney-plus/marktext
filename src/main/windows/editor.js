@@ -8,6 +8,7 @@ import BaseWindow, { WindowLifecycle, WindowType } from './base'
 import { ensureWindowPosition, zoomIn, zoomOut } from './utils'
 import { TITLE_BAR_HEIGHT, editorWinOptions, isLinux, isOsx } from '../config'
 import { showEditorContextMenu } from '../contextMenu/editor'
+import { getTranslator } from '../i18n'
 import { loadMarkdownFile } from '../filesystem/markdown'
 import { switchLanguage } from '../spellchecker'
 
@@ -62,6 +63,8 @@ class EditorWindow extends BaseWindow {
       spellcheckerEnabled,
       spellcheckerLanguage
     } = preferences.getAll()
+    const language = preferences.getItem('language') || preferences.getAll().language
+    const t = getTranslator(language)
 
     // Enable native or custom/frameless window and titlebar
     if (!isOsx) {
@@ -92,7 +95,8 @@ class EditorWindow extends BaseWindow {
     appMenu.addEditorMenu(win, { sourceCodeModeEnabled })
 
     win.webContents.on('context-menu', (event, params) => {
-      showEditorContextMenu(win, event, params, preferences.getItem('spellcheckerEnabled'))
+      const language = preferences.getItem('language') || preferences.getAll().language
+      showEditorContextMenu(win, event, params, preferences.getItem('spellcheckerEnabled'), language)
     })
 
     win.webContents.once('did-finish-load', () => {
@@ -136,7 +140,7 @@ class EditorWindow extends BaseWindow {
         return
       }
 
-      const msg = `The renderer process has crashed unexpected or is killed (${reason}).`
+      const msg = t('The renderer process has crashed unexpected or is killed ({reason}).').replace('{reason}', reason)
       log.error(msg)
 
       if (reason === 'abnormal-exit') {
@@ -145,8 +149,8 @@ class EditorWindow extends BaseWindow {
 
       const { response } = await dialog.showMessageBox(win, {
         type: 'warning',
-        buttons: ['Close', 'Reload', 'Keep It Open'],
-        message: 'MarkText has crashed',
+        buttons: [t('Close'), t('Reload'), t('Keep It Open')],
+        message: t('MarkText has crashed'),
         detail: msg
       })
 

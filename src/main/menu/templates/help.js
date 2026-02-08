@@ -3,6 +3,7 @@ import { shell } from 'electron'
 import { isFile } from 'common/filesystem'
 import * as actions from '../actions/help'
 import { checkUpdates } from '../actions/marktext'
+import { getTranslator } from '../../i18n'
 
 /// Check whether the package is updatable at runtime.
 const isUpdatable = () => {
@@ -27,68 +28,70 @@ const isUpdatable = () => {
   return false
 }
 
-export default function () {
+export default function (preferences) {
+  const language = preferences.getItem('language') || preferences.getAll().language
+  const t = getTranslator(language)
   const helpMenu = {
-    label: '&Help',
+    label: t('&Help'),
     role: 'help',
     submenu: [{
-      label: 'Quick Start...',
+      label: t('Quick Start...'),
       click () {
         shell.openExternal('https://github.com/marktext/marktext/blob/master/docs/README.md')
       }
     }, {
-      label: 'Markdown Reference...',
+      label: t('Markdown Reference...'),
       click () {
         shell.openExternal('https://github.com/marktext/marktext/blob/master/docs/MARKDOWN_SYNTAX.md')
       }
     }, {
-      label: 'Changelog...',
+      label: t('Changelog...'),
       click () {
         shell.openExternal('https://github.com/marktext/marktext/blob/master/.github/CHANGELOG.md')
       }
     }, {
       type: 'separator'
     }, {
-      label: 'Donate via Open Collective...',
+      label: t('Donate via Open Collective...'),
       click (item, win) {
         shell.openExternal('https://opencollective.com/marktext')
       }
     }, {
-      label: 'Feedback via Twitter...',
+      label: t('Feedback via Twitter...'),
       click (item, win) {
         actions.showTweetDialog(win, 'twitter')
       }
     }, {
-      label: 'Report Issue or Request Feature...',
+      label: t('Report Issue or Request Feature...'),
       click () {
         shell.openExternal('https://github.com/marktext/marktext/issues')
       }
     }, {
       type: 'separator'
     }, {
-      label: 'Website...',
+      label: t('Website...'),
       click () {
         shell.openExternal('https://github.com/marktext/marktext')
       }
     }, {
-      label: 'Watch on GitHub...',
+      label: t('Watch on GitHub...'),
       click () {
         shell.openExternal('https://github.com/marktext/marktext')
       }
     }, {
-      label: 'Follow us on Github...',
+      label: t('Follow us on Github...'),
       click () {
         shell.openExternal('https://github.com/Jocs')
       }
     }, {
-      label: 'Follow us on Twitter...',
+      label: t('Follow us on Twitter...'),
       click () {
         shell.openExternal('https://twitter.com/marktextapp')
       }
     }, {
       type: 'separator'
     }, {
-      label: 'License...',
+      label: t('License...'),
       click () {
         shell.openExternal('https://github.com/marktext/marktext/blob/master/LICENSE')
       }
@@ -99,7 +102,7 @@ export default function () {
     helpMenu.submenu.push({
       type: 'separator'
     }, {
-      label: 'Check for updates...',
+      label: t('Check for updates...'),
       click (menuItem, browserWindow) {
         checkUpdates(browserWindow)
       }
@@ -110,7 +113,7 @@ export default function () {
     helpMenu.submenu.push({
       type: 'separator'
     }, {
-      label: 'About MarkText...',
+      label: t('About MarkText...'),
       click (menuItem, browserWindow) {
         actions.showAboutDialog(browserWindow)
       }

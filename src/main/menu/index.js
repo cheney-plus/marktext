@@ -348,7 +348,7 @@ class AppMenu {
 
   _buildSettingMenu () {
     if (isOsx) {
-      const menuTemplate = configSettingMenu(this._keybindings)
+      const menuTemplate = configSettingMenu(this._keybindings, this._preferences)
       const menu = Menu.buildFromTemplate(menuTemplate)
       return { menu, type: MenuType.SETTINGS }
     }
@@ -414,6 +414,19 @@ class AppMenu {
       }
       if (prefs.autoSave !== undefined) {
         this.updateAutoSaveMenu(prefs.autoSave)
+      }
+      if (prefs.language !== undefined) {
+        this.updateAppMenu()
+        this.windowMenus.forEach((value, key) => {
+          if (value.type !== MenuType.SETTINGS) {
+            return
+          }
+          const { menu: newMenu } = this._buildSettingMenu()
+          value.menu = newMenu
+          if (this.activeWindowId === key) {
+            this._setApplicationMenu(newMenu)
+          }
+        })
       }
     })
   }

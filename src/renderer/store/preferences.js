@@ -15,6 +15,8 @@ const state = {
   startUpAction: 'lastState',
   defaultDirectoryToOpen: '',
   language: 'en',
+  llmProvider: 'deepseek',
+  llmBearerToken: '',
 
   editorFontFamily: 'Open Sans',
   fontSize: 16,
@@ -39,6 +41,7 @@ const state = {
   imageRelativeDirectoryName: 'assets',
   hideLinkPopup: false,
   autoCheck: false,
+  aiGeneratedMark: 'none',
 
   preferLooseListItem: true,
   bulletListMarker: '-',
@@ -125,6 +128,7 @@ const actions = {
   },
 
   SET_SINGLE_PREFERENCE ({ commit }, { type, value }) {
+    commit('SET_USER_PREFERENCE', { [type]: value })
     // save to electron-store
     ipcRenderer.send('mt::set-user-preference', { [type]: value })
   },

@@ -1,10 +1,13 @@
 import * as actions from '../actions/view'
+import { getTranslator } from '../../i18n'
 
-export default function (keybindings) {
+export default function (keybindings, preferences) {
+  const language = preferences.getItem('language') || preferences.getAll().language
+  const t = getTranslator(language)
   const viewMenu = {
-    label: '&View',
+    label: t('&View'),
     submenu: [{
-      label: 'Command Palette...',
+      label: t('Command Palette...'),
       accelerator: keybindings.getAccelerator('view.command-palette'),
       click (menuItem, focusedWindow) {
         actions.showCommandPalette(focusedWindow)
@@ -13,7 +16,7 @@ export default function (keybindings) {
       type: 'separator'
     }, {
       id: 'sourceCodeModeMenuItem',
-      label: 'Source Code Mode',
+      label: t('Source Code Mode'),
       accelerator: keybindings.getAccelerator('view.source-code-mode'),
       type: 'checkbox',
       checked: false,
@@ -22,7 +25,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'typewriterModeMenuItem',
-      label: 'Typewriter Mode',
+      label: t('Typewriter Mode'),
       accelerator: keybindings.getAccelerator('view.typewriter-mode'),
       type: 'checkbox',
       checked: false,
@@ -31,7 +34,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'focusModeMenuItem',
-      label: 'Focus Mode',
+      label: t('Focus Mode'),
       accelerator: keybindings.getAccelerator('view.focus-mode'),
       type: 'checkbox',
       checked: false,
@@ -41,7 +44,7 @@ export default function (keybindings) {
     }, {
       type: 'separator'
     }, {
-      label: 'Show Sidebar',
+      label: t('Show Sidebar'),
       id: 'sideBarMenuItem',
       accelerator: keybindings.getAccelerator('view.toggle-sidebar'),
       type: 'checkbox',
@@ -50,7 +53,7 @@ export default function (keybindings) {
         actions.toggleSidebar(focusedWindow)
       }
     }, {
-      label: 'Show Tab Bar',
+      label: t('Show Tab Bar'),
       id: 'tabBarMenuItem',
       accelerator: keybindings.getAccelerator('view.toggle-tabbar'),
       type: 'checkbox',
@@ -59,14 +62,14 @@ export default function (keybindings) {
         actions.toggleTabBar(focusedWindow)
       }
     }, {
-      label: 'Toggle Table of Contents',
+      label: t('Toggle Table of Contents'),
       id: 'tocMenuItem',
       accelerator: keybindings.getAccelerator('view.toggle-toc'),
       click (_, focusedWindow) {
         actions.showTableOfContents(focusedWindow)
       }
     }, {
-      label: 'Reload Images',
+      label: t('Reload Images'),
       accelerator: keybindings.getAccelerator('view.reload-images'),
       click (item, focusedWindow) {
         actions.reloadImageCache(focusedWindow)
@@ -79,14 +82,14 @@ export default function (keybindings) {
       type: 'separator'
     })
     viewMenu.submenu.push({
-      label: 'Show Developer Tools',
+      label: t('Show Developer Tools'),
       accelerator: keybindings.getAccelerator('view.toggle-dev-tools'),
       click (item, win) {
         actions.debugToggleDevTools(win)
       }
     })
     viewMenu.submenu.push({
-      label: 'Reload window',
+      label: t('Reload window'),
       accelerator: keybindings.getAccelerator('view.dev-reload'),
       click (item, focusedWindow) {
         actions.debugReloadWindow(focusedWindow)

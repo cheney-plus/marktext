@@ -1,17 +1,21 @@
 import { getCurrentWindow, Menu as RemoteMenu, MenuItem as RemoteMenuItem } from '@electron/remote'
-import {
-  SEPARATOR,
-  NEW_FILE,
-  NEW_DIRECTORY,
-  COPY,
-  CUT,
-  PASTE,
-  RENAME,
-  DELETE,
-  SHOW_IN_FOLDER
-} from './menuItems'
+import { createSideBarMenuItems } from './menuItems'
+import store from '../../store'
+import { translate } from '../../i18n'
 
 export const showContextMenu = (event, hasPathCache) => {
+  const t = key => translate(store.state.preferences.language, key)
+  const {
+    SEPARATOR,
+    NEW_FILE,
+    NEW_DIRECTORY,
+    COPY,
+    CUT,
+    PASTE,
+    RENAME,
+    DELETE,
+    SHOW_IN_FOLDER
+  } = createSideBarMenuItems(t)
   const menu = new RemoteMenu()
   const win = getCurrentWindow()
   const CONTEXT_ITEMS = [

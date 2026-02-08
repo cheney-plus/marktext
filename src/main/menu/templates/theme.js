@@ -1,12 +1,15 @@
 import * as actions from '../actions/theme'
+import { getTranslator } from '../../i18n'
 
 export default function (userPreference) {
+  const language = userPreference.getItem('language') || userPreference.getAll().language
+  const t = getTranslator(language)
   const { theme } = userPreference.getAll()
   return {
-    label: '&Theme',
+    label: t('&Theme'),
     id: 'themeMenu',
     submenu: [{
-      label: 'Cadmium Light',
+      label: t('Cadmium Light'),
       type: 'radio',
       id: 'light',
       checked: theme === 'light',
@@ -14,7 +17,7 @@ export default function (userPreference) {
         actions.selectTheme('light')
       }
     }, {
-      label: 'Dark',
+      label: t('Dark'),
       type: 'radio',
       id: 'dark',
       checked: theme === 'dark',
@@ -22,7 +25,7 @@ export default function (userPreference) {
         actions.selectTheme('dark')
       }
     }, {
-      label: 'Graphite Light',
+      label: t('Graphite Light'),
       type: 'radio',
       id: 'graphite',
       checked: theme === 'graphite',
@@ -30,7 +33,7 @@ export default function (userPreference) {
         actions.selectTheme('graphite')
       }
     }, {
-      label: 'Material Dark',
+      label: t('Material Dark'),
       type: 'radio',
       id: 'material-dark',
       checked: theme === 'material-dark',
@@ -38,7 +41,7 @@ export default function (userPreference) {
         actions.selectTheme('material-dark')
       }
     }, {
-      label: 'One Dark',
+      label: t('One Dark'),
       type: 'radio',
       id: 'one-dark',
       checked: theme === 'one-dark',
@@ -46,7 +49,7 @@ export default function (userPreference) {
         actions.selectTheme('one-dark')
       }
     }, {
-      label: 'Ulysses Light',
+      label: t('Ulysses Light'),
       type: 'radio',
       id: 'ulysses',
       checked: theme === 'ulysses',

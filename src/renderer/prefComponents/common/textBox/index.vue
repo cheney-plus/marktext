@@ -10,6 +10,7 @@
       class="input"
       :class="{error: invalidInput}"
       :placeholder="defaultValue"
+      :type="type"
       v-model="inputText"
       @input="handleInput"
       size="small"
@@ -45,6 +46,10 @@ export default {
     defaultValue: {
       type: String,
       default: ''
+    },
+    type: {
+      type: String,
+      default: 'text'
     },
     emitTime: {
       type: Number,

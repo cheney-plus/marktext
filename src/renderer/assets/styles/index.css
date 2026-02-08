@@ -189,6 +189,12 @@ body {
   border: solid 1px var(--floatBorderColor);
   background-color: var(--floatBgColor);
 }
+.el-dialog.ag-dialog-ai {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px 0 var(--floatBorderColor);
+  border: solid 1px var(--floatBorderColor);
+  background-color: var(--floatBgColor);
+}
 .el-dialog__header {
   position: relative;
   display: block;
@@ -234,6 +240,44 @@ div.el-tab-pane {
   opacity: .3;
   pointer-events: none;
   cursor: not-allowed;
+}
+
+.ai-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-dialog-title .ai-back {
+  border: none;
+  background: transparent;
+  padding: 4px;
+  color: var(--buttonFontColor);
+}
+.ai-dialog-title .ai-title {
+  font-size: 14px;
+  color: var(--floatFontColor);
+}
+.ai-dialog-body .ai-output {
+  height: 240px;
+  overflow: auto;
+  border: 1px solid var(--editorColor10);
+  border-radius: 6px;
+  padding: 10px;
+  color: var(--editorColor80);
+  background: var(--inputBgColor);
+  white-space: pre-wrap;
+}
+.ai-dialog-body .ai-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  color: var(--editorColor60);
+  font-size: 12px;
+}
+.ai-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .button,

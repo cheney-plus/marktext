@@ -26,12 +26,12 @@
             v-model="searchValue"
             @keyup="search($event)"
             ref="search"
-            placeholder="Search"
+            :placeholder="$t('Search')"
           >
           <div class="controls">
             <span class="search-result">{{`${highlightIndex + 1} / ${highlightCount}`}}</span>
             <span
-              title="Case Sensitive"
+              :title="$t('Case Sensitive')"
               class="is-case-sensitive"
               :class="{'active': isCaseSensitive}"
               @click.stop="toggleCtrl('isCaseSensitive')"
@@ -41,7 +41,7 @@
               </svg>
             </span>
             <span
-              title="Select whole word"
+              :title="$t('Select whole word')"
               class="is-whole-word"
               :class="{'active': isWholeWord}"
               @click.stop="toggleCtrl('isWholeWord')"
@@ -51,7 +51,7 @@
               </svg>
             </span>
             <span
-              title="Use query as RegEx"
+              :title="$t('Use query as RegEx')"
               class="is-regex"
               :class="{'active': isRegexp}"
               @click.stop="toggleCtrl('isRegexp')"
@@ -80,12 +80,12 @@
       </section>
       <section class="replace" v-if="type === 'replace'">
         <div class="input-wrapper replace-input">
-          <input type="text" v-model="replaceValue" placeholder="Replacement">
+          <input type="text" v-model="replaceValue" :placeholder="$t('Replacement')">
         </div>
         <div class="button-group">
           <el-tooltip class="item"
             effect="dark"
-            content="Replace All"
+            :content="$t('Replace All')"
             placement="top"
             :visible-arrow="false"
             :open-delay="1000"
@@ -98,7 +98,7 @@
           </el-tooltip>
           <el-tooltip class="item"
             effect="dark"
-            content="Replace Single"
+            :content="$t('Replace Single')"
             placement="top"
             :visible-arrow="false"
             :open-delay="1000"

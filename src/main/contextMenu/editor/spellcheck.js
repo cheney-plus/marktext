@@ -2,7 +2,7 @@ import { ipcMain, MenuItem } from 'electron'
 import log from 'electron-log'
 import { isOsx } from '../../config'
 import { addToDictionary } from '../../spellchecker'
-import { SEPARATOR } from './menuItems'
+import { createMenuItems } from './menuItems'
 
 /**
  * Build the spell checker menu depending on input.
@@ -12,11 +12,12 @@ import { SEPARATOR } from './menuItems'
  * @param {[string[]]} wordSuggestions Suggestions for `selectedWord`.
  * @returns {MenuItem[]}
  */
-export default (isMisspelled, misspelledWord, wordSuggestions) => {
+export default (isMisspelled, misspelledWord, wordSuggestions, t) => {
+  const { SEPARATOR } = createMenuItems(t)
   const spellingSubmenu = []
 
   spellingSubmenu.push(new MenuItem({
-    label: 'Change Language...',
+    label: t('Change Language...'),
     // NB: On macOS the OS spell checker is used and will detect the language automatically.
     visible: !isOsx,
     click (menuItem, targetWindow) {
@@ -27,7 +28,7 @@ export default (isMisspelled, misspelledWord, wordSuggestions) => {
   // Handle misspelled word if wordSuggestions is set, otherwise word is correct.
   if (isMisspelled && misspelledWord && wordSuggestions) {
     spellingSubmenu.push({
-      label: 'Add to Dictionary',
+      label: t('Add to Dictionary'),
       click (menuItem, targetWindow) {
         if (!addToDictionary(targetWindow, misspelledWord)) {
           log.error(`Error while adding "${misspelledWord}" to dictionary.`)
@@ -54,7 +55,7 @@ export default (isMisspelled, misspelledWord, wordSuggestions) => {
     }
   } else {
     spellingSubmenu.push({
-      label: 'Edit Dictionary...',
+      label: t('Edit Dictionary...'),
       click (menuItem, targetWindow) {
         ipcMain.emit('app-create-settings-window', 'spelling')
       }

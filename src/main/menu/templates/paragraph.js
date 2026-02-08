@@ -1,12 +1,15 @@
 import * as actions from '../actions/paragraph'
+import { getTranslator } from '../../i18n'
 
-export default function (keybindings) {
+export default function (keybindings, preferences) {
+  const language = preferences.getItem('language') || preferences.getAll().language
+  const t = getTranslator(language)
   return {
     id: 'paragraphMenuEntry',
-    label: '&Paragraph',
+    label: t('&Paragraph'),
     submenu: [{
       id: 'heading1MenuItem',
-      label: 'Heading 1',
+      label: t('Heading 1'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.heading-1'),
       click (menuItem, focusedWindow) {
@@ -14,7 +17,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'heading2MenuItem',
-      label: 'Heading 2',
+      label: t('Heading 2'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.heading-2'),
       click (menuItem, focusedWindow) {
@@ -22,7 +25,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'heading3MenuItem',
-      label: 'Heading 3',
+      label: t('Heading 3'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.heading-3'),
       click (menuItem, focusedWindow) {
@@ -30,7 +33,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'heading4MenuItem',
-      label: 'Heading 4',
+      label: t('Heading 4'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.heading-4'),
       click (menuItem, focusedWindow) {
@@ -38,7 +41,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'heading5MenuItem',
-      label: 'Heading 5',
+      label: t('Heading 5'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.heading-5'),
       click (menuItem, focusedWindow) {
@@ -46,7 +49,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'heading6MenuItem',
-      label: 'Heading 6',
+      label: t('Heading 6'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.heading-6'),
       click (menuItem, focusedWindow) {
@@ -56,14 +59,14 @@ export default function (keybindings) {
       type: 'separator'
     }, {
       id: 'upgradeHeadingMenuItem',
-      label: 'Promote Heading',
+      label: t('Promote Heading'),
       accelerator: keybindings.getAccelerator('paragraph.upgrade-heading'),
       click (menuItem, focusedWindow) {
         actions.increaseHeading(focusedWindow)
       }
     }, {
       id: 'degradeHeadingMenuItem',
-      label: 'Demote Heading',
+      label: t('Demote Heading'),
       accelerator: keybindings.getAccelerator('paragraph.degrade-heading'),
       click (menuItem, focusedWindow) {
         actions.degradeHeading(focusedWindow)
@@ -72,7 +75,7 @@ export default function (keybindings) {
       type: 'separator'
     }, {
       id: 'tableMenuItem',
-      label: 'Table',
+      label: t('Table'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.table'),
       click (menuItem, focusedWindow) {
@@ -80,7 +83,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'codeFencesMenuItem',
-      label: 'Code Fences',
+      label: t('Code Fences'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.code-fence'),
       click (menuItem, focusedWindow) {
@@ -88,7 +91,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'quoteBlockMenuItem',
-      label: 'Quote Block',
+      label: t('Quote Block'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.quote-block'),
       click (menuItem, focusedWindow) {
@@ -96,7 +99,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'mathBlockMenuItem',
-      label: 'Math Block',
+      label: t('Math Block'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.math-formula'),
       click (menuItem, focusedWindow) {
@@ -104,7 +107,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'htmlBlockMenuItem',
-      label: 'Html Block',
+      label: t('HTML Block'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.html-block'),
       click (menuItem, focusedWindow) {
@@ -114,7 +117,7 @@ export default function (keybindings) {
       type: 'separator'
     }, {
       id: 'orderListMenuItem',
-      label: 'Ordered List',
+      label: t('Ordered List'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.order-list'),
       click (menuItem, focusedWindow) {
@@ -122,7 +125,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'bulletListMenuItem',
-      label: 'Bullet List',
+      label: t('Bullet List'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.bullet-list'),
       click (menuItem, focusedWindow) {
@@ -130,7 +133,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'taskListMenuItem',
-      label: 'Task List',
+      label: t('Task List'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.task-list'),
       click (menuItem, focusedWindow) {
@@ -140,7 +143,7 @@ export default function (keybindings) {
       type: 'separator'
     }, {
       id: 'looseListItemMenuItem',
-      label: 'Loose List Item',
+      label: t('Loose List Item'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.loose-list-item'),
       click (menuItem, focusedWindow) {
@@ -150,7 +153,7 @@ export default function (keybindings) {
       type: 'separator'
     }, {
       id: 'paragraphMenuItem',
-      label: 'Paragraph',
+      label: t('Paragraph'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.paragraph'),
       click (menuItem, focusedWindow) {
@@ -158,7 +161,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'horizontalLineMenuItem',
-      label: 'Horizontal Rule',
+      label: t('Horizontal Rule'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.horizontal-line'),
       click (menuItem, focusedWindow) {
@@ -166,7 +169,7 @@ export default function (keybindings) {
       }
     }, {
       id: 'frontMatterMenuItem',
-      label: 'Front Matter',
+      label: t('Front Matter'),
       type: 'checkbox',
       accelerator: keybindings.getAccelerator('paragraph.front-matter'),
       click (menuItem, focusedWindow) {

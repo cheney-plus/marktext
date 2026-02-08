@@ -72,6 +72,21 @@
     "type": "string",
     "default": "en"
   },
+  "llmProvider": {
+    "description": "General--Large model provider",
+    "enum": [
+      "deepseek",
+      "qwen",
+      "doubao",
+      "yuanbao"
+    ],
+    "default": "deepseek"
+  },
+  "llmBearerToken": {
+    "description": "General--Bearer token for large model",
+    "type": "string",
+    "default": ""
+  },
   "editorFontFamily": {
     "description": "Editor--editor font family",
     "type": "string",
@@ -225,6 +240,18 @@
     "type": "boolean",
     "default": false
   },
+  "aiGeneratedMark": {
+    "description": "Editor--AI generated content mark style",
+    "enum": [
+      "none",
+      "bold",
+      "highlight",
+      "underline",
+      "italic",
+      "inlineFormula"
+    ],
+    "default": "none"
+  },
   "preferLooseListItem": {
     "description": "Markdown--The preferred list type",
     "type": "boolean",
@@ -361,6 +388,11 @@
   },
   "sideBarVisibility": {
     "description": "View--Whether the side bar is visible.",
+    "type": "boolean",
+    "default": true
+  },
+  "sideBarVisibilityMigrated": {
+    "description": "View--Whether sidebar default migration has been applied.",
     "type": "boolean",
     "default": false
   },

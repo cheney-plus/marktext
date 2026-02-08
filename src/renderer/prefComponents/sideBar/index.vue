@@ -1,12 +1,12 @@
 <template>
   <div class="pref-sidebar">
-    <h3 class="title">Preferences</h3>
+    <h3 class="title">{{ $t('Preferences') }}</h3>
     <section class="search-wrapper">
       <el-autocomplete
         popper-class="pref-autocomplete"
         v-model="state"
         :fetch-suggestions="querySearch"
-        placeholder="Search preferences"
+        :placeholder="$t('Search preferences')"
         :trigger-on-focus="false"
         @select="handleSelect">
         <i
@@ -35,15 +35,19 @@
 </template>
 <script>
 import { ipcRenderer } from 'electron'
-import { category, searchContent } from './config'
+import { getCategory, getSearchContent } from './config'
 
 export default {
   data () {
-    this.category = category
     return {
       currentCategory: 'general',
       restaurants: [],
       state: ''
+    }
+  },
+  computed: {
+    category () {
+      return getCategory(this.$t)
     }
   },
   watch: {
@@ -51,6 +55,9 @@ export default {
       if (to.name !== from.name) {
         this.currentCategory = to.name
       }
+    },
+    '$store.state.preferences.language' () {
+      this.restaurants = this.loadAll()
     }
   },
   methods: {
@@ -67,11 +74,11 @@ export default {
       }
     },
     loadAll () {
-      return searchContent
+      return getSearchContent(this.$t)
     },
     handleSelect (item) {
       this.$router.push({
-        path: `/preference/${item.category.toLowerCase()}`
+        path: `/preference/${item.categoryLabel || item.category.toLowerCase()}`
       })
     },
     handleCategoryItemClick (item) {
