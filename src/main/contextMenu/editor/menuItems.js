@@ -77,50 +77,56 @@ export const createMenuItems = t => ({
   }
 })
 
-export const createAiMenuItems = (t, selectionText) => ({
-  AI_GROUP: {
-    label: t('AI'),
-    submenu: [
-      {
-        label: t('Continue Writing'),
-        id: 'aiContinueMenuItem',
-        icon: createAiIcon('续写.png'),
-        click (menuItem, targetWindow) {
-          targetWindow.webContents.send('mt::cm-ai', { action: 'continue', text: selectionText })
-        }
-      },
-      {
-        label: t('Polish'),
-        id: 'aiPolishMenuItem',
-        icon: createAiIcon('润色.png'),
-        click (menuItem, targetWindow) {
-          targetWindow.webContents.send('mt::cm-ai', { action: 'polish', text: selectionText })
-        }
-      },
-      {
-        label: t('Shorten'),
-        id: 'aiShortenMenuItem',
-        icon: createAiIcon('缩写.png'),
-        click (menuItem, targetWindow) {
-          targetWindow.webContents.send('mt::cm-ai', { action: 'shorten', text: selectionText })
-        }
-      },
-      {
-        label: t('Expand'),
-        id: 'aiExpandMenuItem',
-        icon: createAiIcon('扩写.png'),
-        click (menuItem, targetWindow) {
-          targetWindow.webContents.send('mt::cm-ai', { action: 'expand', text: selectionText })
-        }
-      },
-      {
-        label: t('Chat'),
-        id: 'aiChatMenuItem',
-        icon: createAiIcon('ai对话.png'),
-        click (menuItem, targetWindow) {
-          targetWindow.webContents.send('mt::cm-ai', { action: 'chat', text: selectionText })
-        }
-      }
-    ]
+export const createAiMenuItems = (t, selectionText, { hasText } = {}) => {
+  const safeText = selectionText || ''
+  const chatItem = {
+    label: t('Chat'),
+    id: 'aiChatMenuItem',
+    icon: createAiIcon('ai对话.png'),
+    click (menuItem, targetWindow) {
+      targetWindow.webContents.send('mt::cm-ai', { action: 'chat', text: safeText })
+    }
   }
-})
+  const fullItems = [
+    {
+      label: t('Continue Writing'),
+      id: 'aiContinueMenuItem',
+      icon: createAiIcon('续写.png'),
+      click (menuItem, targetWindow) {
+        targetWindow.webContents.send('mt::cm-ai', { action: 'continue', text: safeText })
+      }
+    },
+    {
+      label: t('Polish'),
+      id: 'aiPolishMenuItem',
+      icon: createAiIcon('润色.png'),
+      click (menuItem, targetWindow) {
+        targetWindow.webContents.send('mt::cm-ai', { action: 'polish', text: safeText })
+      }
+    },
+    {
+      label: t('Shorten'),
+      id: 'aiShortenMenuItem',
+      icon: createAiIcon('缩写.png'),
+      click (menuItem, targetWindow) {
+        targetWindow.webContents.send('mt::cm-ai', { action: 'shorten', text: safeText })
+      }
+    },
+    {
+      label: t('Expand'),
+      id: 'aiExpandMenuItem',
+      icon: createAiIcon('扩写.png'),
+      click (menuItem, targetWindow) {
+        targetWindow.webContents.send('mt::cm-ai', { action: 'expand', text: safeText })
+      }
+    },
+    chatItem
+  ]
+  const submenu = hasText ? fullItems : [chatItem]
+  return {
+    AI_GROUP: {
+      label: t('AI'),
+      submenu
+    }
+  }
+}

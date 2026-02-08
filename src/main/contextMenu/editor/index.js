@@ -23,7 +23,8 @@ export const showEditorContextMenu = (win, event, params, isSpellcheckerEnabled,
     INSERT_BEFORE,
     INSERT_AFTER
   } = createMenuItems(t)
-  const { AI_GROUP } = createAiMenuItems(t, selectionText)
+  const hasText = selectionText.trim().length > 0
+  const { AI_GROUP } = createAiMenuItems(t, selectionText, { hasText })
   const CONTEXT_ITEMS = [INSERT_BEFORE, INSERT_AFTER, SEPARATOR, CUT, COPY, PASTE, SEPARATOR, COPY_AS_MARKDOWN, COPY_AS_HTML, PASTE_AS_PLAIN_TEXT]
 
   // NOTE: We have to get the word suggestions from this event because `webFrame.getWordSuggestions` and
@@ -31,7 +32,6 @@ export const showEditorContextMenu = (win, event, params, isSpellcheckerEnabled,
 
   // Make sure that the request comes from a contenteditable inside the editor container.
   if (isInsideEditor(params) && !hasImageContents) {
-    const hasText = selectionText.trim().length > 0
     const canCopy = hasText && editFlags.canCut && editFlags.canCopy
     // const canPaste = hasText && editFlags.canPaste
     const isMisspelled = isEditable && !!selectionText && !!misspelledWord
@@ -46,12 +46,10 @@ export const showEditorContextMenu = (win, event, params, isSpellcheckerEnabled,
       menu.append(new MenuItem(SEPARATOR))
     }
 
-    if (hasText) {
-      menu.append(new MenuItem(AI_GROUP))
-      menu.append(new MenuItem(SEPARATOR))
-    }
+    menu.append(new MenuItem(AI_GROUP))
+    menu.append(new MenuItem(SEPARATOR))
 
-    [CUT, COPY, COPY_AS_HTML, COPY_AS_MARKDOWN].forEach(item => {
+    ;[CUT, COPY, COPY_AS_HTML, COPY_AS_MARKDOWN].forEach(item => {
       item.enabled = canCopy
     })
     CONTEXT_ITEMS.forEach(item => {
