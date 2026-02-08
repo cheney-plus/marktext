@@ -1227,7 +1227,7 @@ export default {
       this.startAiGeneration()
     },
 
-    handleAiApply () {
+    async handleAiApply () {
       if (!this.aiOutput) {
         this.handleAiDialogClose()
         return
@@ -1251,14 +1251,33 @@ export default {
       }
       const { prefix, suffix } = markStyles[this.aiGeneratedMark] || markStyles.none
       const markedText = `${prefix}${this.aiOutput}${suffix}`
-      if (this.aiAction === 'continue' && this.aiSelectionCursor.end) {
-        const { end } = this.aiSelectionCursor
-        selection.setCursorRange({ anchor: end, focus: end })
-      } else {
-        selection.setCursorRange(this.aiSelectionCursor)
-      }
+      const contentState = this.editor && this.editor.contentState
+      const selectionText = this.aiAction === 'continue'
+        ? this.aiSelectionText || (contentState && contentState.getClipBoardData().text) || ''
+        : ''
+      const replacementText = this.aiAction === 'continue'
+        ? `${selectionText}${markedText}`
+        : markedText
+      selection.setCursorRange(this.aiSelectionCursor)
       this.focusEditor()
-      document.execCommand('insertText', false, markedText)
+      if (contentState) {
+        const originalClipboardFilePath = this.editor.options.clipboardFilePath
+        // 禁用基于剪贴板文件路径的图片粘贴，避免误触发图片插入
+        this.editor.options.clipboardFilePath = () => ''
+        const mockEvent = {
+          preventDefault: () => {},
+          stopPropagation: () => {},
+          clipboardData: {
+            getData: () => '',
+            items: []
+          }
+        }
+        try {
+          await contentState.pasteHandler(mockEvent, 'normal', replacementText)
+        } finally {
+          this.editor.options.clipboardFilePath = originalClipboardFilePath
+        }
+      }
       this.handleAiDialogClose()
     },
 
@@ -1437,7 +1456,7 @@ export default {
       } else if (this.aiAction === 'polish') {
         userPrompt = `全文内容是 ${fullText}\n请对以下内容 ${selectionText} 进行润色，保持原意，语言流畅，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
       } else {
-        userPrompt = `全文内容是 ${fullText}\n请续写以下内容 ${selectionText}，保持上下文一致，可以具有一定创造性，但是内容要真实准确，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
+        userPrompt = `全文内容是 ${fullText}\n请续写但不要包括以下内容 ${selectionText}，保持上下文一致，可以具有一定创造性，但是内容要真实准确，输出不得使用 markdown 语法回答，仅输出纯文本文字。`
       }
       return [
         {
