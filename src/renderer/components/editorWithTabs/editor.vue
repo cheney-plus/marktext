@@ -82,7 +82,12 @@
           </button>
           <span class="ai-title">{{ aiDialogTitle }}</span>
         </div>
-        <span v-if="isAiChat" class="ai-provider">{{ aiProviderLabel }}</span>
+        <div v-if="isAiChat" class="ai-title-right">
+          <span class="ai-provider">{{ aiProviderLabel }}</span>
+          <button class="ai-save" type="button" @click="handleAiChatSave">
+            <i class="el-icon-document"></i>
+          </button>
+        </div>
       </div>
       <div v-if="!isAiChat" class="ai-dialog-body">
         <div ref="aiOutput" class="ai-output">{{ aiOutput }}</div>
@@ -141,8 +146,11 @@
 
 <script>
 import { shell } from 'electron'
+import { dialog } from '@electron/remote'
 import path from 'path'
 import log from 'electron-log'
+import fs from 'fs-extra'
+import dayjs from 'dayjs'
 import { mapState } from 'vuex'
 // import ViewImage from 'view-image'
 import { isChildOfDirectory } from 'common/filesystem/paths'
@@ -1657,6 +1665,58 @@ export default {
       this.aiChatActiveMessageId = assistantMessage.id
       this.aiChatInput = ''
       this.startAiGeneration()
+    },
+
+    async handleAiChatSave () {
+      const messages = this.aiChatMessages || []
+      if (!messages.length) return
+      const parts = []
+      parts.push('# Chat Session')
+      parts.push('')
+      parts.push(`- Provider: ${this.aiProviderLabel}`)
+      parts.push(`- Time: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`)
+      parts.push('')
+      for (const m of messages) {
+        const header = m.role === 'assistant' ? '## AI' : '## You'
+        parts.push(header)
+        parts.push('')
+        parts.push(m.content || '')
+        parts.push('')
+      }
+      const md = parts.join('\n')
+      const { pathname, filename } = this.currentFile || {}
+      let targetPath = ''
+      if (pathname) {
+        const dir = path.dirname(pathname)
+        const base = filename ? filename.replace(/\.[^/.]+$/, '') : 'note'
+        targetPath = path.join(dir, `${base}.chat-${dayjs().format('YYYYMMDD-HHmmss')}.md`)
+      } else {
+        const { filePath, canceled } = await dialog.showSaveDialog({
+          title: 'Save Chat as Markdown',
+          defaultPath: `chat-${dayjs().format('YYYYMMDD-HHmmss')}.md`,
+          filters: [{ name: 'Markdown', extensions: ['md'] }]
+        })
+        if (canceled || !filePath) return
+        targetPath = filePath
+        if (!/\.md$/i.test(targetPath)) {
+          targetPath = `${targetPath}.md`
+        }
+      }
+      try {
+        await fs.outputFile(targetPath, md, 'utf8')
+        notice.notify({
+          title: 'AI Chat',
+          type: 'success',
+          message: `Saved to ${targetPath}`
+        })
+      } catch (err) {
+        log.error(err)
+        notice.notify({
+          title: 'AI Chat',
+          type: 'error',
+          message: `Save failed: ${err.message}`
+        })
+      }
     }
   },
   beforeDestroy () {
@@ -1765,9 +1825,32 @@ export default {
     gap: 8px;
   }
 
+  .ai-dialog-title .ai-title-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .ai-dialog-title .ai-provider {
     font-size: 12px;
     color: var(--editorColor60);
+  }
+
+  .ai-dialog-title .ai-save {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--editorColor10);
+    background: var(--floatBgColor);
+    color: var(--editorColor70);
+  }
+
+  .ai-dialog-title .ai-save:hover {
+    color: var(--themeColor);
+    border-color: var(--themeColor);
   }
 
   .ai-dialog-body {
@@ -1821,8 +1904,8 @@ export default {
   }
 
   .ai-chat-message.user .ai-chat-avatar {
-    background: #e6f2ff;
-    color: var(--editorColor80);
+    background: #3b82f6;
+    color: #fff;
   }
 
   .ai-chat-message.assistant .ai-chat-avatar {
