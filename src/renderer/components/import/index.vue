@@ -19,7 +19,7 @@
             <img :src="`${importIcon.url}`" alt="import file">
           </div>
           <div>{{ $t('Import or Open') }}</div>
-          <p>{{ $t('Drop here to get your stuff into MarkText') }}</p>
+          <p>{{ $t('Drop here to get your stuff into markup') }}</p>
         </div>
         <div class="file-list">
           <div>.md</div>

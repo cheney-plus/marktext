@@ -113,7 +113,7 @@ export default function (preferences) {
     helpMenu.submenu.push({
       type: 'separator'
     }, {
-      label: t('About MarkText...'),
+      label: t('About markup...'),
       click (menuItem, browserWindow) {
         actions.showAboutDialog(browserWindow)
       }

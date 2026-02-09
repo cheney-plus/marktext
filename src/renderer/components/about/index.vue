@@ -33,7 +33,7 @@ import MarkTextLogo from '../../assets/images/logo.png'
 
 export default {
   data () {
-    this.name = 'MarkText'
+    this.name = 'markup'
     this.logo = MarkTextLogo
     return {
       showAboutDialog: false
@@ -48,7 +48,7 @@ export default {
         .replace('{year}', `2017-${new Date().getFullYear()}`)
     },
     copyrightContributors () {
-      return this.$t('Copyright © {year} MarkText Contributors')
+      return this.$t('Copyright © {year} markup Contributors')
         .replace('{year}', `2018-${new Date().getFullYear()}`)
     }
   },

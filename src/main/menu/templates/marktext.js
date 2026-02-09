@@ -9,9 +9,9 @@ export default function (keybindings, preferences) {
   const language = preferences.getItem('language') || preferences.getAll().language
   const t = getTranslator(language)
   return {
-    label: 'MarkText',
+    label: 'markup',
     submenu: [{
-      label: t('About MarkText'),
+      label: t('About markup'),
       click (menuItem, focusedWindow) {
         showAboutDialog(focusedWindow)
       }
@@ -35,7 +35,7 @@ export default function (keybindings, preferences) {
     }, {
       type: 'separator'
     }, {
-      label: t('Hide MarkText'),
+      label: t('Hide markup'),
       accelerator: keybindings.getAccelerator('mt.hide'),
       click () {
         actions.osxHide()
@@ -54,7 +54,7 @@ export default function (keybindings, preferences) {
     }, {
       type: 'separator'
     }, {
-      label: t('Quit MarkText'),
+      label: t('Quit markup'),
       accelerator: keybindings.getAccelerator('file.quit'),
       click: app.quit
     }]

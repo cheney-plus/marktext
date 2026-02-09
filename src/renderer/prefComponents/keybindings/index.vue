@@ -3,7 +3,7 @@
     <h4>{{ $t('Keybindings') }}</h4>
     <section class="keybindings">
       <div class="text">
-        {{ $t('Customize MarkText shortcuts and click on the save button below to apply all changes (requires a restart).') }}
+        {{ $t('Customize markup shortcuts and click on the save button below to apply all changes (requires a restart).') }}
         {{ $t('All available and default key binding can be found') }}
         <a class="link" @click="openKeybindingWiki">{{ $t('online') }}</a>.
       </div>

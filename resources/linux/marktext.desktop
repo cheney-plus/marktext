@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=MarkText
+Name=markup
 Comment=Next generation markdown editor
 Exec=marktext %F
 Terminal=false
