@@ -1,5 +1,6 @@
 import { rgPath } from 'vscode-ripgrep'
 import EnvPaths from 'common/envPaths'
+import { isFile2 } from 'common/filesystem'
 
 // // "vscode-ripgrep" is unpacked out of asar because of the binary.
 const rgDiskPath = rgPath.replace(/\bapp\.asar\b/, 'app.asar.unpacked')
@@ -18,12 +19,13 @@ class RendererPaths extends EnvPaths {
     // Initialize environment paths
     super(userDataPath)
 
-    // Allow to use a local ripgrep binary (e.g. an optimized version).
-    if (process.env.MARKTEXT_RIPGREP_PATH) {
-      // NOTE: Binary must be a compatible version, otherwise the searcher may fail.
-      this._ripgrepBinaryPath = process.env.MARKTEXT_RIPGREP_PATH
-    } else {
+    const envRgPath = process.env.MARKTEXT_RIPGREP_PATH
+    if (envRgPath && isFile2(envRgPath)) {
+      this._ripgrepBinaryPath = envRgPath
+    } else if (isFile2(rgDiskPath)) {
       this._ripgrepBinaryPath = rgDiskPath
+    } else {
+      this._ripgrepBinaryPath = 'rg'
     }
   }
 

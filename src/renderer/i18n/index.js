@@ -25,7 +25,8 @@ const messages = {
     'AI Mark Highlight': 'Highlight',
     'AI Mark Underline': 'Underline',
     'AI Mark Italic': 'Italic',
-    'AI Mark Inline Formula': 'Inline Formula'
+    'AI Mark Inline Formula': 'Inline Formula',
+    'Ripgrep binary not found. Please run yarn install or set MARKTEXT_RIPGREP_PATH.': 'Ripgrep binary not found. Please run yarn install or set MARKTEXT_RIPGREP_PATH.'
   },
   zh: {
     General: '通用',
@@ -315,6 +316,7 @@ const messages = {
     'No folder open': '未打开文件夹',
     'No results found.': '未找到结果。',
     'Search was limited to 100 files.': '搜索已限制为 100 个文件。',
+    'Ripgrep binary not found. Please run yarn install or set MARKTEXT_RIPGREP_PATH.': '未找到 ripgrep 可执行文件，请运行 yarn install 或设置 MARKTEXT_RIPGREP_PATH。',
     matches: '匹配项',
     match: '匹配项',
     files: '文件',

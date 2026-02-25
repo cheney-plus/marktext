@@ -266,7 +266,11 @@ export default {
           this.searcherCancelCallback = null
           this.stopShowSearchCancelAreaTimer()
 
-          this.searchErrorString = err.message
+          if (err && err.code === 'ENOENT') {
+            this.searchErrorString = this.$t('Ripgrep binary not found. Please run yarn install or set MARKTEXT_RIPGREP_PATH.')
+          } else {
+            this.searchErrorString = err.message
+          }
           log.error(err)
         })
 

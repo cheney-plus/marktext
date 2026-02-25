@@ -9,7 +9,7 @@
     "release": "echo 'Please run \"build\" or \"release:{linux,mac,win}\"' && exit 1",
     "release:linux": "node .electron-vue/build.js && electron-builder build --linux",
     "release:mac": "node .electron-vue/build.js && electron-builder build --mac",
-    "release:win": "node .electron-vue/build.js && electron-builder build --win",
+    "release:win": "node -e \"if (process.platform !== 'win32') { console.error('release:win must run on Windows to build native modules.'); process.exit(1); }\" && electron-builder install-app-deps && node .electron-vue/build.js && electron-builder build --win",
     "build": "node .electron-vue/build.js && electron-builder",
     "build:bin": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
