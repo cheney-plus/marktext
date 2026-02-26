@@ -83,7 +83,6 @@
           <span class="ai-title">{{ aiDialogTitle }}</span>
         </div>
         <div v-if="isAiChat" class="ai-title-right">
-          <span class="ai-provider">{{ aiProviderLabel }}</span>
           <button class="ai-save" type="button" @click="handleAiChatSave">
             <i class="el-icon-document"></i>
           </button>
@@ -109,6 +108,15 @@
             </div>
             <div class="ai-chat-bubble">
               <div class="ai-chat-content" v-html="message.html"></div>
+              <button
+                v-if="message.role === 'assistant' && message.content && !message.isGreeting"
+                class="ai-chat-insert-icon"
+                type="button"
+                :title="$t('Save to Note')"
+                @click="handleAiChatInsert(message)"
+              >
+                <i class="el-icon-document"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -1639,6 +1647,7 @@ export default {
       this.aiChatActiveMessageId = null
       this.aiChatInput = selectionText || ''
       const greeting = this.createAiChatMessage('assistant', this.$t('AI Chat Greeting'))
+      greeting.isGreeting = true
       this.aiChatMessages.push(greeting)
       this.renderAiChatMessage(greeting)
       this.$nextTick(this.scrollAiChatToBottom)
@@ -1720,6 +1729,37 @@ export default {
       this.startAiGeneration()
     },
 
+    async handleAiChatInsert (message) {
+      if (!message || message.isGreeting) {
+        return
+      }
+      const text = (message && message.content) ? message.content.trim() : ''
+      if (!text) {
+        return
+      }
+      const editor = this.editor
+      if (!editor) {
+        return
+      }
+      const current = editor.getMarkdown() || ''
+      const time = dayjs().format('YYYY-MM-DD HH:mm:ss')
+      const block = [
+        '---',
+        `> AI 对话保存于 ${time}`,
+        '---',
+        text,
+        ''
+      ].join('\n')
+      const separator = current.trim() ? '\n\n' : ''
+      const nextMarkdown = `${current}${separator}${block}`
+      editor.setMarkdown(nextMarkdown)
+      notice.notify({
+        title: this.$t('AI'),
+        type: 'success',
+        message: this.$t('Chat saved to note')
+      })
+    },
+
     async handleAiChatSave () {
       const messages = this.aiChatMessages || []
       if (!messages.length) return
@@ -1758,16 +1798,16 @@ export default {
       try {
         await fs.outputFile(targetPath, md, 'utf8')
         notice.notify({
-          title: 'AI Chat',
+          title: this.$t('AI'),
           type: 'success',
-          message: `Saved to ${targetPath}`
+          message: this.$t('Chat saved to file', { path: targetPath })
         })
       } catch (err) {
         log.error(err)
         notice.notify({
-          title: 'AI Chat',
+          title: this.$t('AI'),
           type: 'error',
-          message: `Save failed: ${err.message}`
+          message: this.$t('Chat save failed', { error: err.message })
         })
       }
     }
@@ -2002,12 +2042,35 @@ export default {
 
   .ai-chat-bubble {
     max-width: 420px;
-    padding: 8px 10px;
+    padding: 6px 26px 12px 10px;
     border-radius: 8px;
     border: 1px solid var(--editorColor10);
     background: var(--floatBgColor);
     color: var(--editorColor80);
     word-break: break-word;
+    position: relative;
+  }
+
+  .ai-chat-insert-icon {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--editorColor60);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .ai-chat-insert-icon:hover {
+    color: var(--themeColor);
+    border-color: var(--themeColor);
+    background: var(--floatHoverColor);
   }
 
   .ai-chat-message.user .ai-chat-bubble {
@@ -2017,6 +2080,15 @@ export default {
   .ai-chat-bubble .markdown-body {
     margin: 0;
     font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .ai-chat-bubble .markdown-body p {
+    margin: 0 0 6px 0;
+  }
+
+  .ai-chat-bubble .markdown-body p:last-child {
+    margin-bottom: 0;
   }
 
   .ai-chat-footer {
@@ -2031,15 +2103,16 @@ export default {
 
   .ai-chat-input {
     width: 100%;
-    height: 72px;
+    height: 56px;
     resize: none;
-    padding: 8px 12px;
+    padding: 8px 10px;
     border: 1px solid var(--editorColor10);
     border-radius: 6px;
     background: var(--inputBgColor);
     color: var(--editorColor80);
     outline: none;
     font-size: 13px;
+    line-height: 18px;
     box-sizing: border-box;
   }
 

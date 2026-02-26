@@ -26,6 +26,8 @@ const messages = {
     'AI Mark Underline': 'Underline',
     'AI Mark Italic': 'Italic',
     'AI Mark Inline Formula': 'Inline Formula',
+    'Chat saved to file': 'Chat saved to file: {path}',
+    'Chat save failed': 'Chat save failed: {error}',
     'Ripgrep binary not found. Please run yarn install or set MARKTEXT_RIPGREP_PATH.': 'Ripgrep binary not found. Please run yarn install or set MARKTEXT_RIPGREP_PATH.'
   },
   zh: {
@@ -75,6 +77,10 @@ const messages = {
     'Apply Replace': '采纳替换',
     Pause: '暂停',
     Send: '发送',
+    'Save to Note': '保存到笔记',
+    'Chat saved to note': '已保存到本笔记末尾',
+    'Chat saved to file': '会话已保存为文件：{path}',
+    'Chat save failed': '会话保存失败：{error}',
     You: '你',
     'Type a message': '输入消息',
     'AI Chat Greeting': '主人，你好呀，请问有什么能够帮助的？',
@@ -416,11 +422,20 @@ const messages = {
   }
 }
 
-export const translate = (language, key) => {
+export const translate = (language, key, params) => {
   const normalized = typeof language === 'string' ? language.toLowerCase() : ''
   const languageKey = normalized.startsWith('zh') ? 'zh' : language
   const group = messages[languageKey] || messages.en
-  return group[key] || messages.en[key] || key
+  const text = group[key] || messages.en[key] || key
+  if (!params || typeof text !== 'string') {
+    return text
+  }
+  return text.replace(/\{(\w+)\}/g, (match, name) => {
+    if (Object.prototype.hasOwnProperty.call(params, name)) {
+      return params[name]
+    }
+    return match
+  })
 }
 
 export default messages

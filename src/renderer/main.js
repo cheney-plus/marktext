@@ -70,8 +70,8 @@ store.watch(
   language => applyElementLocale(language)
 )
 
-Vue.prototype.$t = function (key) {
-  return translate(store.state.preferences.language, key)
+Vue.prototype.$t = function (key, params) {
+  return translate(store.state.preferences.language, key, params)
 }
 
 Vue.use(Dialog)
