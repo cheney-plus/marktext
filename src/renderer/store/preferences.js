@@ -17,6 +17,8 @@ const state = {
   language: 'en',
   llmProvider: 'deepseek',
   llmBearerToken: '',
+  aiRagDefaultEnabled: false,
+  aiMemoryDefaultEnabled: false,
 
   editorFontFamily: 'Open Sans',
   fontSize: 16,

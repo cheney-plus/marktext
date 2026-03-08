@@ -120,6 +120,16 @@
           :emitTime="0"
           :onChange="value => onSelectChange('llmBearerToken', value)"
         ></text-box>
+        <bool
+          :description="$t('Default enable RAG local notes')"
+          :bool="aiRagDefaultEnabled"
+          :onChange="value => onSelectChange('aiRagDefaultEnabled', value)"
+        ></bool>
+        <bool
+          :description="$t('Default enable context memory')"
+          :bool="aiMemoryDefaultEnabled"
+          :onChange="value => onSelectChange('aiMemoryDefaultEnabled', value)"
+        ></bool>
       </template>
     </compound>
 
@@ -195,7 +205,9 @@ export default {
       fileSortBy: state => state.preferences.fileSortBy,
       language: state => state.preferences.language,
       llmProvider: state => state.preferences.llmProvider,
-      llmBearerToken: state => state.preferences.llmBearerToken
+      llmBearerToken: state => state.preferences.llmBearerToken,
+      aiRagDefaultEnabled: state => state.preferences.aiRagDefaultEnabled,
+      aiMemoryDefaultEnabled: state => state.preferences.aiMemoryDefaultEnabled
     }),
     isOsx () {
       return isOsx

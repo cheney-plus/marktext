@@ -12,9 +12,7 @@ require('electron').app.on('ready', () => {
   const { default: installExtension, VUEJS_DEVTOOLS } = require('electron-devtools-installer')
   installExtension(VUEJS_DEVTOOLS)
     .then(() => {})
-    .catch(err => {
-      console.log('Unable to install `vue-devtools`: \n', err)
-    })
+    .catch(() => {})
 })
 
 /* eslint-enable */

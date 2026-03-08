@@ -1,3 +1,4 @@
+import './polyfills'
 import './globalSetting'
 import path from 'path'
 import { app, dialog } from 'electron'

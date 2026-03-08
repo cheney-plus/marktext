@@ -87,6 +87,16 @@
     "type": "string",
     "default": ""
   },
+  "aiRagDefaultEnabled": {
+    "description": "General--Default enable RAG local notes",
+    "type": "boolean",
+    "default": false
+  },
+  "aiMemoryDefaultEnabled": {
+    "description": "General--Default enable context memory",
+    "type": "boolean",
+    "default": false
+  },
   "editorFontFamily": {
     "description": "Editor--editor font family",
     "type": "string",

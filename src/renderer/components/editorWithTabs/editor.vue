@@ -208,7 +208,7 @@ import { guessClipboardFilePath } from '@/util/clipboard'
 import { getCssForOptions, getHtmlToc } from '@/util/pdf'
 import { addCommonStyle, setEditorWidth } from '@/util/theme'
 import selection from 'muya/lib/selection'
-import { callExternalLlmStream } from '@/util/llm'
+import { callExternalLlmStream } from '@/../main/ai/langchain/rag/core/llm'
 import markdownToHtml from '@/util/markdownToHtml'
 
 import 'muya/themes/default.css'
@@ -1457,7 +1457,12 @@ export default {
 
     async runAiRequest () {
       const messages = this.buildAiMessages()
-      const result = await callExternalLlmStream({ messages })
+      const provider = (this.preferences && this.preferences.llmProvider) || ''
+      const token = (this.preferences && this.preferences.llmBearerToken) || ''
+      const result = await callExternalLlmStream({
+        messages,
+        config: { provider, token }
+      })
       if (!result || !result.stream) {
         this.aiGenerating = false
         notice.error({

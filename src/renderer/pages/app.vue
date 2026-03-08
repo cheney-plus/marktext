@@ -32,6 +32,7 @@
       <rename></rename>
       <tweet></tweet>
       <import-modal></import-modal>
+      <ai-chat-dialog></ai-chat-dialog>
     </div>
   </div>
 </template>
@@ -48,6 +49,7 @@ import ExportSettingDialog from '@/components/exportSettings'
 import Rename from '@/components/rename'
 import Tweet from '@/components/tweet'
 import ImportModal from '@/components/import'
+import AiChatDialog from '@/components/aiChatDialog'
 import { loadingPageMixins } from '@/mixins'
 import { mapState } from 'vuex'
 import bus from '@/bus'
@@ -66,7 +68,8 @@ export default {
     Rename,
     Tweet,
     ImportModal,
-    CommandPalette
+    CommandPalette,
+    AiChatDialog
   },
   mixins: [loadingPageMixins],
   data () {

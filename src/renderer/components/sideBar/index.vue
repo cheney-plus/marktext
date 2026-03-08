@@ -24,7 +24,8 @@
           :key="index"
           @click="handleLeftBottomClick(c.name)"
         >
-          <svg :viewBox="c.icon.viewBox">
+          <img v-if="c.iconType === 'img'" class="side-bar-icon" :src="c.icon" />
+          <svg v-else :viewBox="c.icon.viewBox">
             <use :xlink:href="c.icon.url"></use>
           </svg>
         </li>
@@ -54,6 +55,7 @@ import Tree from './tree.vue'
 import SideBarSearch from './search.vue'
 import Toc from './toc.vue'
 import { mapState } from 'vuex'
+import bus from '@/bus'
 
 export default {
   data () {
@@ -132,6 +134,10 @@ export default {
     handleLeftBottomClick (name) {
       if (name === 'settings') {
         this.$store.dispatch('OPEN_SETTING_WINDOW')
+        return
+      }
+      if (name === 'ai-chat') {
+        bus.$emit('open-ai-sidebar-chat')
       }
     }
   }
@@ -192,6 +198,11 @@ export default {
         fill: var(--sideBarIconColor);
         opacity: 1;
         transition: transform .25s ease-in-out;
+      }
+      & > .side-bar-icon {
+        width: 18px;
+        height: 18px;
+        opacity: 1;
       }
       &.active > svg {
         fill: var(--themeColor);

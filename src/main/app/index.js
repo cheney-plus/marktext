@@ -18,6 +18,7 @@ import { watchers } from '../utils/imagePathAutoComplement'
 import { WindowType } from '../windows/base'
 import EditorWindow from '../windows/editor'
 import SettingWindow from '../windows/setting'
+import { ensureRagIndex } from '../ai/langchain/rag/core/rag-llm'
 
 class App {
   /**
@@ -145,6 +146,14 @@ class App {
       autoSwitchTheme,
       theme
     } = preferences.getAll()
+
+    if (defaultDirectoryToOpen) {
+      setTimeout(() => {
+        ensureRagIndex(defaultDirectoryToOpen).catch(error => {
+          log.error(`[RAG] Failed to build index: ${error && error.message ? error.message : error}`)
+        })
+      }, 0)
+    }
 
     if (startUpAction === 'folder' && defaultDirectoryToOpen) {
       const info = normalizeMarkdownPath(defaultDirectoryToOpen)
