@@ -65,7 +65,7 @@ import bus from '@/bus'
 import notice from '@/services/notification'
 import markdownToHtml from '@/util/markdownToHtml'
 import { callExternalLlmStream } from '@/../main/ai/langchain/rag/core/llm'
-import { ensureRagIndex, getRagContext } from '@/../main/ai/langchain/rag/core/rag-llm'
+// import { ensureRagIndex, getRagContext } from '@/../main/ai/langchain/rag/core/rag-llm'
 import dayjs from 'dayjs'
 import path from 'path'
 import { dialog } from '@electron/remote'
@@ -121,15 +121,17 @@ export default {
     }
   },
   watch: {
-    ragRootPath: {
-      immediate: true,
-      handler (value) {
-        if (!value) {
-          return
-        }
-        ensureRagIndex(value).catch(() => {})
-      }
-    },
+
+    // chenjierag
+    // ragRootPath: {
+    //   immediate: true,
+    //   handler (value) {
+    //     if (!value) {
+    //       return
+    //     }
+    //     ensureRagIndex(value).catch(() => {})
+    //   }
+    // },
     memoryEnabled (value) {
       if (!value) {
         this.aiChatMemory = []
@@ -236,22 +238,24 @@ export default {
       }
     },
     async buildSystemPrompt (latestUserContent) {
-      if (!this.ragEnabled) {
-        return 'You are a helpful AI assistant.'
-      }
-      const rootPath = this.ragRootPath
-      if (!rootPath) {
-        return 'You are a helpful AI assistant.'
-      }
-      const context = await getRagContext({
-        rootPath,
-        query: latestUserContent,
-        k: 2
-      })
-      if (!context) {
-        return 'You are a helpful AI assistant.'
-      }
-      return `你是一位精通知识的学者，擅长语言与文字表达能力，请根据下面的笔记内容与用户提问进行回答。回答内容要准确、流畅、有逻辑。\n\n相关笔记内容：\n${context}`
+      // chenjierag
+      // if (!this.ragEnabled) {
+      //   return 'You are a helpful AI assistant.'
+      // }
+      // const rootPath = this.ragRootPath
+      // if (!rootPath) {
+      //   return 'You are a helpful AI assistant.'
+      // }
+      // const context = await getRagContext({
+      //   rootPath,
+      //   query: latestUserContent,
+      //   k: 2
+      // })
+      // if (!context) {
+      //   return 'You are a helpful AI assistant.'
+      // }
+      // return `你是一位精通知识的学者，擅长语言与文字表达能力，请根据下面的笔记内容与用户提问进行回答。回答内容要准确、流畅、有逻辑。\n\n相关笔记内容：\n${context}`
+      return '你是一位精通知识的学者，擅长语言与文字表达能力，请根据下面的笔记内容与用户提问进行回答。'
     },
     async buildChatMessages (userContent) {
       const systemPrompt = await this.buildSystemPrompt(userContent)
@@ -297,9 +301,10 @@ export default {
       this.aiGenerating = true
       this.aiStreamFinished = false
       try {
-        if (this.ragEnabled && this.ragRootPath) {
-          await ensureRagIndex(this.ragRootPath)
-        }
+        // chenjierag
+        // if (this.ragEnabled && this.ragRootPath) {
+        //   await ensureRagIndex(this.ragRootPath)
+        // }
         const messages = await this.buildChatMessages(latestUserContent)
         const result = await callExternalLlmStream({
           messages,
